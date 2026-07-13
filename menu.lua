@@ -1,13 +1,12 @@
 -- // ============================================
--- // MENU 99 NOITES - ESTILO SPEED HUB X
--- // VERMELHO - COMPACTO - ABAS LATERAIS
+-- // MENU 99 NOITES - VERSÃO OTIMIZADA
+-- // MAIS LARGO - MAIS BAIXO - SEM EMOJIS
 -- // ============================================
 
 local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 
 -- // ========== SISTEMA DE CHAVE ==========
 local chaveCorreta = "99noites2025"
@@ -22,8 +21,8 @@ screenGui.ResetOnSpawn = false
 -- // ========== JANELA DE CHAVE ==========
 local keyFrame = Instance.new("Frame")
 keyFrame.Parent = screenGui
-keyFrame.Size = UDim2.new(0, 350, 0, 180)
-keyFrame.Position = UDim2.new(0.5, -175, 0.5, -90)
+keyFrame.Size = UDim2.new(0, 300, 0, 160)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -80)
 keyFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 keyFrame.BorderSizePixel = 1
 keyFrame.BorderColor3 = Color3.fromRGB(200, 0, 0)
@@ -36,29 +35,30 @@ keyCorner.CornerRadius = UDim.new(0, 4)
 
 local keyTitle = Instance.new("TextLabel")
 keyTitle.Parent = keyFrame
-keyTitle.Size = UDim2.new(1, 0, 0, 35)
+keyTitle.Size = UDim2.new(1, 0, 0, 30)
 keyTitle.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-keyTitle.Text = "🔐 SISTEMA DE CHAVE"
+keyTitle.Text = "SISTEMA DE CHAVE"
 keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyTitle.TextScaled = true
 keyTitle.Font = Enum.Font.GothamBold
 keyTitle.BorderSizePixel = 0
+keyTitle.TextSize = 12
 
 local keySub = Instance.new("TextLabel")
 keySub.Parent = keyFrame
-keySub.Size = UDim2.new(1, -30, 0, 25)
-keySub.Position = UDim2.new(0, 15, 0, 45)
+keySub.Size = UDim2.new(1, -30, 0, 20)
+keySub.Position = UDim2.new(0, 15, 0, 40)
 keySub.BackgroundTransparency = 1
 keySub.Text = "Digite a chave para acessar"
 keySub.TextColor3 = Color3.fromRGB(150, 150, 150)
 keySub.TextScaled = true
 keySub.Font = Enum.Font.Gotham
-keySub.TextSize = 12
+keySub.TextSize = 10
 
 local keyInput = Instance.new("TextBox")
 keyInput.Parent = keyFrame
-keyInput.Size = UDim2.new(0.8, 0, 0, 35)
-keyInput.Position = UDim2.new(0.1, 0, 0, 75)
+keyInput.Size = UDim2.new(0.8, 0, 0, 30)
+keyInput.Position = UDim2.new(0.1, 0, 0, 65)
 keyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 keyInput.BorderSizePixel = 1
 keyInput.BorderColor3 = Color3.fromRGB(200, 0, 0)
@@ -68,6 +68,7 @@ keyInput.TextScaled = true
 keyInput.Font = Enum.Font.Gotham
 keyInput.PlaceholderText = "Digite a chave..."
 keyInput.ClearTextOnFocus = true
+keyInput.TextSize = 11
 
 local keyCornerInput = Instance.new("UICorner")
 keyCornerInput.Parent = keyInput
@@ -75,14 +76,15 @@ keyCornerInput.CornerRadius = UDim.new(0, 3)
 
 local keyBtn = Instance.new("TextButton")
 keyBtn.Parent = keyFrame
-keyBtn.Size = UDim2.new(0.4, 0, 0, 30)
-keyBtn.Position = UDim2.new(0.3, 0, 0, 125)
+keyBtn.Size = UDim2.new(0.4, 0, 0, 28)
+keyBtn.Position = UDim2.new(0.3, 0, 0, 110)
 keyBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 keyBtn.Text = "CONFIRMAR"
 keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyBtn.TextScaled = true
 keyBtn.Font = Enum.Font.GothamBold
 keyBtn.BorderSizePixel = 0
+keyBtn.TextSize = 11
 
 local keyCornerBtn = Instance.new("UICorner")
 keyCornerBtn.Parent = keyBtn
@@ -90,14 +92,14 @@ keyCornerBtn.CornerRadius = UDim.new(0, 3)
 
 local keyError = Instance.new("TextLabel")
 keyError.Parent = keyFrame
-keyError.Size = UDim2.new(1, 0, 0, 18)
-keyError.Position = UDim2.new(0, 0, 0, 160)
+keyError.Size = UDim2.new(1, 0, 0, 16)
+keyError.Position = UDim2.new(0, 0, 0, 142)
 keyError.BackgroundTransparency = 1
 keyError.Text = ""
 keyError.TextColor3 = Color3.fromRGB(255, 50, 50)
 keyError.TextScaled = true
 keyError.Font = Enum.Font.Gotham
-keyError.TextSize = 11
+keyError.TextSize = 10
 
 keyBtn.MouseButton1Click:Connect(function()
     if keyInput.Text == chaveCorreta then
@@ -105,7 +107,7 @@ keyBtn.MouseButton1Click:Connect(function()
         keyFrame.Visible = false
         toggleMenu()
     else
-        keyError.Text = "❌ Chave incorreta!"
+        keyError.Text = "Chave incorreta!"
         keyInput.Text = ""
     end
 end)
@@ -117,8 +119,8 @@ end)
 -- // ========== JANELA PRINCIPAL ==========
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = screenGui
-mainFrame.Size = UDim2.new(0, 480, 0, 460)
-mainFrame.Position = UDim2.new(0.5, -240, 0.5, -230)
+mainFrame.Size = UDim2.new(0, 550, 0, 420)
+mainFrame.Position = UDim2.new(0.5, -275, 0.5, -210)
 mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 mainFrame.BorderSizePixel = 1
 mainFrame.BorderColor3 = Color3.fromRGB(200, 0, 0)
@@ -132,7 +134,7 @@ mainCorner.CornerRadius = UDim.new(0, 4)
 -- // ========== TOP BAR ==========
 local topBar = Instance.new("Frame")
 topBar.Parent = mainFrame
-topBar.Size = UDim2.new(1, 0, 0, 32)
+topBar.Size = UDim2.new(1, 0, 0, 28)
 topBar.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 topBar.BorderSizePixel = 0
 
@@ -143,25 +145,26 @@ topCorner.CornerRadius = UDim.new(0, 4)
 local title = Instance.new("TextLabel")
 title.Parent = topBar
 title.Size = UDim2.new(0.7, 0, 1, 0)
-title.Position = UDim2.new(0, 12, 0, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🔴 99 NOITES MENU"
+title.Text = "99 NOITES MENU"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextSize = 14
+title.TextSize = 12
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Parent = topBar
-closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -34, 0, 2)
+closeBtn.Size = UDim2.new(0, 24, 0, 24)
+closeBtn.Position = UDim2.new(1, -28, 0, 2)
 closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-closeBtn.Text = "✕"
+closeBtn.Text = "X"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.TextScaled = true
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.BorderSizePixel = 0
+closeBtn.TextSize = 10
 
 local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = closeBtn
@@ -174,8 +177,8 @@ end)
 -- // ========== ABAS LATERAIS ==========
 local sidebar = Instance.new("Frame")
 sidebar.Parent = mainFrame
-sidebar.Size = UDim2.new(0, 100, 1, -32)
-sidebar.Position = UDim2.new(0, 0, 0, 32)
+sidebar.Size = UDim2.new(0, 80, 1, -28)
+sidebar.Position = UDim2.new(0, 0, 0, 28)
 sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 sidebar.BorderSizePixel = 0
 
@@ -183,14 +186,14 @@ local sidebarCorner = Instance.new("UICorner")
 sidebarCorner.Parent = sidebar
 sidebarCorner.CornerRadius = UDim.new(0, 0)
 
--- // Lista de abas do jogo
+-- // Lista de abas (SEM EMOJIS)
 local abas = {
-    {id = "sobrevivencia", nome = "🏕️ SOBREV", hover = "Sobrevivência"},
-    {id = "combate", nome = "⚔️ COMBATE", hover = "Combate"},
-    {id = "recursos", nome = "🪓 RECURSOS", hover = "Recursos"},
-    {id = "visao", nome = "👁️ VISÃO", hover = "Visão"},
-    {id = "movimento", nome = "🚀 MOV", hover = "Movimento"},
-    {id = "config", nome = "⚙️ CONFIG", hover = "Config"}
+    {id = "sobrevivencia", nome = "SOBREV"},
+    {id = "combate", nome = "COMBATE"},
+    {id = "recursos", nome = "RECURSOS"},
+    {id = "visao", nome = "VISAO"},
+    {id = "movimento", nome = "MOV"},
+    {id = "config", nome = "CONFIG"}
 }
 
 local abasBotoes = {}
@@ -200,8 +203,8 @@ local abaAtual = "sobrevivencia"
 for i, aba in ipairs(abas) do
     local btn = Instance.new("TextButton")
     btn.Parent = sidebar
-    btn.Size = UDim2.new(1, -4, 0, 38)
-    btn.Position = UDim2.new(0, 2, 0, 2 + (i - 1) * 42)
+    btn.Size = UDim2.new(1, -4, 0, 30)
+    btn.Position = UDim2.new(0, 2, 0, 2 + (i - 1) * 34)
     btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(20, 20, 20)
     btn.Text = aba.nome
     btn.TextColor3 = (i == 1) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)
@@ -209,9 +212,8 @@ for i, aba in ipairs(abas) do
     btn.Font = Enum.Font.GothamSemibold
     btn.BorderSizePixel = 0
     btn.Name = aba.id
-    btn.TextSize = 12
+    btn.TextSize = 10
     
-    -- Tooltip simples (hover)
     btn.MouseEnter:Connect(function()
         if btn.BackgroundColor3 ~= Color3.fromRGB(200, 0, 0) then
             btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -242,8 +244,8 @@ end
 -- // ========== ÁREA DE CONTEÚDO ==========
 local contentFrame = Instance.new("Frame")
 contentFrame.Parent = mainFrame
-contentFrame.Size = UDim2.new(1, -110, 1, -42)
-contentFrame.Position = UDim2.new(0, 105, 0, 37)
+contentFrame.Size = UDim2.new(1, -90, 1, -36)
+contentFrame.Position = UDim2.new(0, 85, 0, 33)
 contentFrame.BackgroundTransparency = 1
 
 local abasContent = {}
@@ -257,13 +259,13 @@ end
 
 -- // ========== FUNÇÕES PARA CRIAR ELEMENTOS ==========
 
--- // Criar Toggle
+-- // Criar Toggle (INTERRUPTOR ESTILO CHECKBOX)
 function criarToggle(container, texto, callback, valorInicial)
     local frame = Instance.new("Frame")
     frame.Parent = container
-    frame.Size = UDim2.new(1, -10, 0, 32)
-    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 35 + 5)
-    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.Size = UDim2.new(1, -10, 0, 26)
+    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
+    frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
     frame.BorderSizePixel = 0
     frame.BackgroundTransparency = 0.3
     
@@ -276,45 +278,57 @@ function criarToggle(container, texto, callback, valorInicial)
     
     local label = Instance.new("TextLabel")
     label.Parent = frame
-    label.Size = UDim2.new(0.65, 0, 1, 0)
-    label.Position = UDim2.new(0, 8, 0, 0)
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.Position = UDim2.new(0, 6, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = texto
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextColor3 = Color3.fromRGB(220, 220, 220)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextScaled = true
-    label.Font = Enum.Font.GothamSemibold
-    label.TextSize = 12
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 10
     
-    local btn = Instance.new("TextButton")
-    btn.Parent = frame
-    btn.Size = UDim2.new(0, 50, 0, 24)
-    btn.Position = UDim2.new(1, -56, 0.5, -12)
-    btn.BackgroundColor3 = valorInicial and Color3.fromRGB(0, 200, 50) or Color3.fromRGB(200, 0, 0)
-    btn.Text = valorInicial and "ON" or "OFF"
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamBold
-    btn.BorderSizePixel = 0
-    btn.TextSize = 11
+    -- INTERRUPTOR (checkbox slider)
+    local switch = Instance.new("Frame")
+    switch.Parent = frame
+    switch.Size = UDim2.new(0, 32, 0, 16)
+    switch.Position = UDim2.new(1, -38, 0.5, -8)
+    switch.BackgroundColor3 = valorInicial and Color3.fromRGB(0, 180, 50) or Color3.fromRGB(150, 30, 30)
+    switch.BorderSizePixel = 0
     
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.Parent = btn
-    btnCorner.CornerRadius = UDim.new(0, 3)
+    local switchCorner = Instance.new("UICorner")
+    switchCorner.Parent = switch
+    switchCorner.CornerRadius = UDim.new(1, 0)
+    
+    local thumb = Instance.new("Frame")
+    thumb.Parent = switch
+    thumb.Size = UDim2.new(0, 12, 0, 12)
+    thumb.Position = valorInicial and UDim2.new(0, 18, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
+    thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    thumb.BorderSizePixel = 0
+    
+    local thumbCorner = Instance.new("UICorner")
+    thumbCorner.Parent = thumb
+    thumbCorner.CornerRadius = UDim.new(1, 0)
     
     local estado = valorInicial or false
     
-    btn.MouseButton1Click:Connect(function()
+    -- Clique no switch ou no frame todo
+    local function toggleSwitch()
         estado = not estado
         if estado then
-            btn.BackgroundColor3 = Color3.fromRGB(0, 200, 50)
-            btn.Text = "ON"
+            switch.BackgroundColor3 = Color3.fromRGB(0, 180, 50)
+            thumb.Position = UDim2.new(0, 18, 0.5, -6)
         else
-            btn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-            btn.Text = "OFF"
+            switch.BackgroundColor3 = Color3.fromRGB(150, 30, 30)
+            thumb.Position = UDim2.new(0, 2, 0.5, -6)
         end
         callback(estado)
-    end)
+    end
+    
+    switch.MouseButton1Click:Connect(toggleSwitch)
+    label.MouseButton1Click:Connect(toggleSwitch)
+    frame.MouseButton1Click:Connect(toggleSwitch)
     
     return frame
 end
@@ -323,8 +337,8 @@ end
 function criarBotao(container, texto, cor, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = container
-    btn.Size = UDim2.new(1, -10, 0, 32)
-    btn.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 35 + 5)
+    btn.Size = UDim2.new(1, -10, 0, 26)
+    btn.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
     btn.BackgroundColor3 = cor or Color3.fromRGB(200, 0, 0)
     btn.Text = texto
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -332,7 +346,7 @@ function criarBotao(container, texto, cor, callback)
     btn.Font = Enum.Font.GothamSemibold
     btn.BorderSizePixel = 0
     btn.BackgroundTransparency = 0.1
-    btn.TextSize = 12
+    btn.TextSize = 10
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.Parent = btn
@@ -354,9 +368,9 @@ end
 function criarSlider(container, texto, min, max, padrao, callback)
     local frame = Instance.new("Frame")
     frame.Parent = container
-    frame.Size = UDim2.new(1, -10, 0, 35)
-    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 35 + 5)
-    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.Size = UDim2.new(1, -10, 0, 30)
+    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
+    frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
     frame.BorderSizePixel = 0
     frame.BackgroundTransparency = 0.3
     
@@ -369,32 +383,32 @@ function criarSlider(container, texto, min, max, padrao, callback)
     
     local label = Instance.new("TextLabel")
     label.Parent = frame
-    label.Size = UDim2.new(0.4, 0, 1, 0)
-    label.Position = UDim2.new(0, 8, 0, 0)
+    label.Size = UDim2.new(0.35, 0, 1, 0)
+    label.Position = UDim2.new(0, 6, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = texto
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextColor3 = Color3.fromRGB(220, 220, 220)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextScaled = true
-    label.Font = Enum.Font.GothamSemibold
-    label.TextSize = 12
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 10
     
     local valorLabel = Instance.new("TextLabel")
     valorLabel.Parent = frame
     valorLabel.Size = UDim2.new(0.1, 0, 1, 0)
-    valorLabel.Position = UDim2.new(0.42, 0, 0, 0)
+    valorLabel.Position = UDim2.new(0.38, 0, 0, 0)
     valorLabel.BackgroundTransparency = 1
     valorLabel.Text = tostring(padrao)
     valorLabel.TextColor3 = Color3.fromRGB(200, 0, 0)
     valorLabel.TextXAlignment = Enum.TextXAlignment.Center
     valorLabel.TextScaled = true
     valorLabel.Font = Enum.Font.GothamBold
-    valorLabel.TextSize = 12
+    valorLabel.TextSize = 10
     
     local sliderBar = Instance.new("Frame")
     sliderBar.Parent = frame
-    sliderBar.Size = UDim2.new(0.4, 0, 0, 5)
-    sliderBar.Position = UDim2.new(0.55, 0, 0.5, -2.5)
+    sliderBar.Size = UDim2.new(0.45, 0, 0, 4)
+    sliderBar.Position = UDim2.new(0.5, 0, 0.5, -2)
     sliderBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     sliderBar.BorderSizePixel = 0
     
@@ -447,22 +461,22 @@ end
 function criarStatus(container, texto, cor)
     local label = Instance.new("TextLabel")
     label.Parent = container
-    label.Size = UDim2.new(1, -10, 0, 22)
-    label.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 25 + 5)
+    label.Size = UDim2.new(1, -10, 0, 18)
+    label.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 20 + 5)
     label.BackgroundTransparency = 1
     label.Text = texto
-    label.TextColor3 = cor or Color3.fromRGB(200, 200, 200)
+    label.TextColor3 = cor or Color3.fromRGB(180, 180, 180)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
-    label.TextSize = 11
+    label.TextSize = 10
     
     return label
 end
 
 -- // ========== CRIAR ABAS ==========
 
--- // 📁 ABA SOBREVIVÊNCIA
+-- // ABA SOBREVIVENCIA
 local sobrevivenciaContainer = Instance.new("ScrollingFrame")
 sobrevivenciaContainer.Parent = contentFrame
 sobrevivenciaContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -473,19 +487,19 @@ sobrevivenciaContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 sobrevivenciaContainer.Visible = true
 abasContent["sobrevivencia"] = sobrevivenciaContainer
 
-criarStatus(sobrevivenciaContainer, "🍖 Fome: 100%", Color3.fromRGB(255, 200, 100))
-criarStatus(sobrevivenciaContainer, "⚡ Energia: 100%", Color3.fromRGB(100, 200, 255))
-criarStatus(sobrevivenciaContainer, "❤️ Vida: 100%", Color3.fromRGB(255, 100, 100))
-criarToggle(sobrevivenciaContainer, "🩸 Auto Heal", function(estado)
+criarStatus(sobrevivenciaContainer, "Fome: 100%", Color3.fromRGB(255, 200, 100))
+criarStatus(sobrevivenciaContainer, "Energia: 100%", Color3.fromRGB(100, 200, 255))
+criarStatus(sobrevivenciaContainer, "Vida: 100%", Color3.fromRGB(255, 100, 100))
+criarToggle(sobrevivenciaContainer, "Auto Heal", function(estado)
     print("Auto Heal:", estado)
 end, true)
-criarToggle(sobrevivenciaContainer, "🍖 Fome Infinita", function(estado)
+criarToggle(sobrevivenciaContainer, "Fome Infinita", function(estado)
     print("Fome Infinita:", estado)
 end, false)
 
-sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 35 + 20)
+sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 28 + 20)
 
--- // 📁 ABA COMBATE
+-- // ABA COMBATE
 local combateContainer = Instance.new("ScrollingFrame")
 combateContainer.Parent = contentFrame
 combateContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -496,22 +510,22 @@ combateContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 combateContainer.Visible = false
 abasContent["combate"] = combateContainer
 
-criarBotao(combateContainer, "⚔️ One Hit Kill", Color3.fromRGB(200, 0, 0), function()
+criarBotao(combateContainer, "One Hit Kill", Color3.fromRGB(200, 0, 0), function()
     print("One Hit Kill")
 end)
-criarToggle(combateContainer, "🛡️ God Mode", function(estado)
+criarToggle(combateContainer, "God Mode", function(estado)
     print("God Mode:", estado)
 end, false)
-criarToggle(combateContainer, "🌀 Kill Aura", function(estado)
+criarToggle(combateContainer, "Kill Aura", function(estado)
     print("Kill Aura:", estado)
 end, false)
-criarBotao(combateContainer, "💀 Matar Todos", Color3.fromRGB(160, 0, 0), function()
+criarBotao(combateContainer, "Matar Todos", Color3.fromRGB(160, 0, 0), function()
     print("Matar Todos")
 end)
 
-combateContainer.CanvasSize = UDim2.new(0, 0, 0, #combateContainer:GetChildren() * 35 + 20)
+combateContainer.CanvasSize = UDim2.new(0, 0, 0, #combateContainer:GetChildren() * 28 + 20)
 
--- // 📁 ABA RECURSOS
+-- // ABA RECURSOS
 local recursosContainer = Instance.new("ScrollingFrame")
 recursosContainer.Parent = contentFrame
 recursosContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -522,22 +536,22 @@ recursosContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 recursosContainer.Visible = false
 abasContent["recursos"] = recursosContainer
 
-criarToggle(recursosContainer, "🪓 Auto Farm Madeira", function(estado)
+criarToggle(recursosContainer, "Auto Farm Madeira", function(estado)
     print("Auto Farm Madeira:", estado)
 end, false)
-criarToggle(recursosContainer, "📦 Auto Farm Pedra", function(estado)
+criarToggle(recursosContainer, "Auto Farm Pedra", function(estado)
     print("Auto Farm Pedra:", estado)
 end, false)
-criarToggle(recursosContainer, "🔥 Farm Rápido", function(estado)
-    print("Farm Rápido:", estado)
+criarToggle(recursosContainer, "Farm Rapido", function(estado)
+    print("Farm Rapido:", estado)
 end, false)
-criarBotao(recursosContainer, "📦 Coletar Tudo", Color3.fromRGB(200, 150, 0), function()
+criarBotao(recursosContainer, "Coletar Tudo", Color3.fromRGB(200, 150, 0), function()
     print("Coletar Tudo")
 end)
 
-recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 35 + 20)
+recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 28 + 20)
 
--- // 📁 ABA VISÃO
+-- // ABA VISAO
 local visaoContainer = Instance.new("ScrollingFrame")
 visaoContainer.Parent = contentFrame
 visaoContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -548,19 +562,19 @@ visaoContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 visaoContainer.Visible = false
 abasContent["visao"] = visaoContainer
 
-criarToggle(visaoContainer, "👀 ESP Monstros", function(estado)
+criarToggle(visaoContainer, "ESP Monstros", function(estado)
     print("ESP Monstros:", estado)
 end, false)
-criarToggle(visaoContainer, "📦 ESP Itens", function(estado)
+criarToggle(visaoContainer, "ESP Itens", function(estado)
     print("ESP Itens:", estado)
 end, false)
-criarToggle(visaoContainer, "☀️ Fullbright", function(estado)
+criarToggle(visaoContainer, "Fullbright", function(estado)
     print("Fullbright:", estado)
 end, false)
 
-visaoContainer.CanvasSize = UDim2.new(0, 0, 0, #visaoContainer:GetChildren() * 35 + 20)
+visaoContainer.CanvasSize = UDim2.new(0, 0, 0, #visaoContainer:GetChildren() * 28 + 20)
 
--- // 📁 ABA MOVIMENTO
+-- // ABA MOVIMENTO
 local movimentoContainer = Instance.new("ScrollingFrame")
 movimentoContainer.Parent = contentFrame
 movimentoContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -571,20 +585,20 @@ movimentoContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 movimentoContainer.Visible = false
 abasContent["movimento"] = movimentoContainer
 
-criarSlider(movimentoContainer, "🚀 Velocidade", 16, 250, 16, function(valor)
+criarSlider(movimentoContainer, "Velocidade", 16, 250, 16, function(valor)
     player.Character.Humanoid.WalkSpeed = valor
     print("Velocidade:", valor)
 end)
-criarToggle(movimentoContainer, "♾️ Pulo Infinito", function(estado)
+criarToggle(movimentoContainer, "Pulo Infinito", function(estado)
     print("Pulo Infinito:", estado)
 end, false)
-criarBotao(movimentoContainer, "📍 Teleport Acampamento", Color3.fromRGB(0, 150, 200), function()
+criarBotao(movimentoContainer, "Teleport Acampamento", Color3.fromRGB(0, 150, 200), function()
     print("Teleport Acampamento")
 end)
 
-movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildren() * 35 + 20)
+movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildren() * 28 + 20)
 
--- // 📁 ABA CONFIG
+-- // ABA CONFIG
 local configContainer = Instance.new("ScrollingFrame")
 configContainer.Parent = contentFrame
 configContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -595,14 +609,14 @@ configContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 configContainer.Visible = false
 abasContent["config"] = configContainer
 
-criarBotao(configContainer, "🔄 Resetar Menu", Color3.fromRGB(200, 100, 0), function()
+criarBotao(configContainer, "Resetar Menu", Color3.fromRGB(200, 100, 0), function()
     print("Resetar Menu")
 end)
-criarBotao(configContainer, "❌ Fechar Menu", Color3.fromRGB(200, 0, 0), function()
+criarBotao(configContainer, "Fechar Menu", Color3.fromRGB(200, 0, 0), function()
     toggleMenu()
 end)
 
-configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() * 35 + 20)
+configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() * 28 + 20)
 
 -- // ========== FUNÇÃO ABRIR/FECHAR ==========
 local aberto = false
@@ -616,15 +630,15 @@ function toggleMenu()
     mainFrame.Visible = aberto
     if aberto then
         mainFrame.BackgroundTransparency = 1
-        mainFrame.Size = UDim2.new(0, 400, 0, 460)
+        mainFrame.Size = UDim2.new(0, 450, 0, 420)
         TweenService:Create(mainFrame, TweenInfo.new(0.25), {
             BackgroundTransparency = 0,
-            Size = UDim2.new(0, 480, 0, 460)
+            Size = UDim2.new(0, 550, 0, 420)
         }):Play()
     else
         TweenService:Create(mainFrame, TweenInfo.new(0.15), {
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, 400, 0, 460)
+            Size = UDim2.new(0, 450, 0, 420)
         }):Play()
         wait(0.15)
         mainFrame.Visible = false
@@ -647,7 +661,7 @@ local draggingMain = false
 local dragStartMain, startPosMain
 
 mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 and input.Position.Y < 32 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and input.Position.Y < 28 then
         draggingMain = true
         dragStartMain = input.Position
         startPosMain = mainFrame.Position
@@ -670,14 +684,15 @@ end)
 -- // ========== NOTIFICAÇÃO ==========
 local notif = Instance.new("TextLabel")
 notif.Parent = screenGui
-notif.Size = UDim2.new(0, 300, 0, 30)
-notif.Position = UDim2.new(0.5, -150, 0.85, 0)
+notif.Size = UDim2.new(0, 250, 0, 26)
+notif.Position = UDim2.new(0.5, -125, 0.85, 0)
 notif.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-notif.Text = "🔴 Menu 99 Noites [K]"
+notif.Text = "Menu 99 Noites [K]"
 notif.TextColor3 = Color3.fromRGB(255, 255, 255)
 notif.TextScaled = true
 notif.Font = Enum.Font.GothamBold
 notif.BorderSizePixel = 0
+notif.TextSize = 10
 
 local notifCorner = Instance.new("UICorner")
 notifCorner.Parent = notif
@@ -685,6 +700,6 @@ notifCorner.CornerRadius = UDim.new(0, 3)
 
 game:GetService("Debris"):AddItem(notif, 3)
 
-print("✅ Menu 99 Noites carregado!")
-print("🔑 Chave: 99noites2025")
-print("📌 Pressione K para abrir")
+print("Menu 99 Noites carregado!")
+print("Chave: 99noites2025")
+print("Pressione K para abrir")
