@@ -1,5 +1,6 @@
 -- // ============================================
--- // MENU 99 NOITES - VERSÃO FINAL FUNCIONAL
+-- // MENU 99 NOITES - VERSÃO FINAL
+-- // GUIA DE EXECUÇÃO
 -- // ============================================
 
 local player = game.Players.LocalPlayer
@@ -7,19 +8,25 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
--- // ========== CONFIGURAÇÕES ==========
+-- // ==========================================
+-- // CONFIGURAÇÕES
+-- // ==========================================
+
 local CHAVE_CORRETA = "99noites2025"
 local chaveValidada = false
 local menuAberto = false
 
--- // ========== CRIAR A GUI ==========
+-- // ==========================================
+-- // CRIAÇÃO DA GUI (PRIMEIRO)
+-- // ==========================================
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player.PlayerGui
 screenGui.Name = "Menu99Noites"
 screenGui.ResetOnSpawn = false
 
 -- // ==========================================
--- // SISTEMA DE CHAVE
+-- // JANELA DE CHAVE
 -- // ==========================================
 
 local keyFrame = Instance.new("Frame")
@@ -99,7 +106,7 @@ keyError.TextScaled = true
 keyError.Font = Enum.Font.Gotham
 
 -- // ==========================================
--- // JANELA PRINCIPAL (MAIS LARGA)
+-- // JANELA PRINCIPAL (CRIADA AGORA)
 -- // ==========================================
 
 local mainFrame = Instance.new("Frame")
@@ -223,7 +230,7 @@ contentFrame.BackgroundTransparency = 1
 local abasContent = {}
 
 -- // ==========================================
--- // FUNÇÕES DE CONTROLE (DEFINIDAS PRIMEIRO)
+-- // FUNÇÕES DE CONTROLE (DEPOIS DA CRIAÇÃO)
 -- // ==========================================
 
 function atualizarAbas(abaId)
@@ -245,6 +252,7 @@ function abrirMenu()
         BackgroundTransparency = 0,
         Size = UDim2.new(0, 620, 0, 400)
     }):Play()
+    print("Menu aberto!")
 end
 
 function fecharMenu()
@@ -255,6 +263,7 @@ function fecharMenu()
     }):Play()
     wait(0.2)
     mainFrame.Visible = false
+    print("Menu fechado!")
 end
 
 function toggleMenu()
@@ -383,7 +392,6 @@ end
 -- // ==========================================
 
 RunService.Heartbeat:Connect(function()
-    -- Pulo Infinito
     if puloInfinito then
         local char = player.Character
         if char and char:FindFirstChild("Humanoid") then
@@ -394,7 +402,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    -- Kill Aura
     if killAura then
         local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
         if enemies then
@@ -411,7 +418,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- // ==========================================
--- // FUNÇÕES DOS ELEMENTOS DA UI
+-- // FUNÇÕES DE CRIAÇÃO DE ELEMENTOS
 -- // ==========================================
 
 function criarToggle(container, texto, callback, valorInicial)
@@ -441,7 +448,6 @@ function criarToggle(container, texto, callback, valorInicial)
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
     
-    -- CHECKBOX
     local checkbox = Instance.new("ImageButton")
     checkbox.Parent = frame
     checkbox.Size = UDim2.new(0, 20, 0, 20)
@@ -623,7 +629,7 @@ end
 -- // CRIAÇÃO DAS ABAS
 -- // ==========================================
 
--- // SOBREVIVENCIA
+-- SOBREVIVENCIA
 local sobrevivenciaContainer = Instance.new("ScrollingFrame")
 sobrevivenciaContainer.Parent = contentFrame
 sobrevivenciaContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -648,7 +654,7 @@ end, false)
 
 sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 30 + 20)
 
--- // COMBATE
+-- COMBATE
 local combateContainer = Instance.new("ScrollingFrame")
 combateContainer.Parent = contentFrame
 combateContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -666,7 +672,7 @@ criarBotao(combateContainer, "Matar Todos", Color3.fromRGB(160, 0, 0), matarTodo
 
 combateContainer.CanvasSize = UDim2.new(0, 0, 0, #combateContainer:GetChildren() * 30 + 20)
 
--- // RECURSOS
+-- RECURSOS
 local recursosContainer = Instance.new("ScrollingFrame")
 recursosContainer.Parent = contentFrame
 recursosContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -685,7 +691,7 @@ end)
 
 recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 30 + 20)
 
--- // VISAO
+-- VISAO
 local visaoContainer = Instance.new("ScrollingFrame")
 visaoContainer.Parent = contentFrame
 visaoContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -702,7 +708,7 @@ criarToggle(visaoContainer, "Fullbright", toggleFullbright, false)
 
 visaoContainer.CanvasSize = UDim2.new(0, 0, 0, #visaoContainer:GetChildren() * 30 + 20)
 
--- // MOVIMENTO
+-- MOVIMENTO
 local movimentoContainer = Instance.new("ScrollingFrame")
 movimentoContainer.Parent = contentFrame
 movimentoContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -723,7 +729,7 @@ criarBotao(movimentoContainer, "Teleport Acampamento", Color3.fromRGB(0, 150, 20
 
 movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildren() * 30 + 20)
 
--- // CONFIG
+-- CONFIG
 local configContainer = Instance.new("ScrollingFrame")
 configContainer.Parent = contentFrame
 configContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -747,13 +753,13 @@ configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() *
 -- // EVENTOS GLOBAIS
 -- // ==========================================
 
--- // Validar chave
+-- Validar chave
 local function validarChave()
     if keyInput.Text == CHAVE_CORRETA then
         chaveValidada = true
         keyFrame.Visible = false
         abrirMenu()
-        print("Chave validada!")
+        print("Chave validada! Menu aberto.")
     else
         keyError.Text = "Chave incorreta!"
         keyInput.Text = ""
@@ -766,9 +772,66 @@ keyInput.FocusLost:Connect(function(enterPressed)
     if enterPressed then validarChave() end
 end)
 
--- // Atalho K
+-- Atalho K
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
         toggleMenu()
     end
-end
+end)
+
+-- Fechar com X
+closeBtn.MouseButton1Click:Connect(function()
+    fecharMenu()
+end)
+
+-- // ==========================================
+-- // SISTEMA DE ARRASTAR
+-- // ==========================================
+
+local draggingMain = false
+local dragStartMain, startPosMain
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and input.Position.Y < 28 then
+        draggingMain = true
+        dragStartMain = input.Position
+        startPosMain = mainFrame.Position
+    end
+end)
+
+mainFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingMain = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if draggingMain and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStartMain
+        mainFrame.Position = UDim2.new(startPosMain.X.Scale, startPosMain.X.Offset + delta.X, startPosMain.Y.Scale, startPosMain.Y.Offset + delta.Y)
+    end
+end)
+
+-- // ==========================================
+-- // NOTIFICAÇÃO
+-- // ==========================================
+
+local notif = Instance.new("TextLabel")
+notif.Parent = screenGui
+notif.Size = UDim2.new(0, 280, 0, 28)
+notif.Position = UDim2.new(0.5, -140, 0.85, 0)
+notif.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+notif.Text = "Menu 99 Noites carregado! [K]"
+notif.TextColor3 = Color3.fromRGB(255, 255, 255)
+notif.TextScaled = true
+notif.Font = Enum.Font.GothamBold
+notif.BorderSizePixel = 0
+
+local notifCorner = Instance.new("UICorner")
+notifCorner.Parent = notif
+notifCorner.CornerRadius = UDim.new(0, 3)
+
+game:GetService("Debris"):AddItem(notif, 4)
+
+print("Menu 99 Noites carregado!")
+print("Chave: 99noites2025")
