@@ -1,6 +1,6 @@
 -- // ============================================
 -- // PROTON MENU - BETA 1.0
--- // 99 NOITES
+-- // SISTEMA DE CHAVE REFEITO
 -- // ============================================
 
 local player = game.Players.LocalPlayer
@@ -10,14 +10,16 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 
 -- // ==========================================
--- // VARIAVEIS GLOBAIS
+-- // CONFIG
 -- // ==========================================
 
+local CHAVE = "proton2025"
 local menuAberto = false
 local corAtual = Color3.fromRGB(200, 0, 0)
+local validado = false
 
 -- // ==========================================
--- // FUNÇÕES REAIS DO JOGO
+-- // FUNÇÕES DO JOGO
 -- // ==========================================
 
 local godMode = false
@@ -29,9 +31,9 @@ local espMonstros = false
 local espItens = false
 local fullbright = false
 
-function toggleGodMode(valor)
-    godMode = valor
-    if valor then
+function toggleGodMode(v)
+    godMode = v
+    if v then
         player.Character.Humanoid.MaxHealth = math.huge
         player.Character.Humanoid.Health = math.huge
     else
@@ -40,55 +42,16 @@ function toggleGodMode(valor)
     end
 end
 
-function togglePuloInfinito(valor)
-    puloInfinito = valor
-end
+function togglePuloInfinito(v) puloInfinito = v end
+function toggleKillAura(v) killAura = v end
+function toggleAutoFarmMadeira(v) autoFarmMadeira = v end
+function toggleAutoFarmPedra(v) autoFarmPedra = v end
+function toggleESPMonstros(v) espMonstros = v end
+function toggleESPItens(v) espItens = v end
 
-function oneHitKill()
-    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
-    if enemies then
-        for _, v in ipairs(enemies:GetChildren()) do
-            if v:FindFirstChild("Humanoid") then
-                v.Humanoid.Health = 0
-            end
-        end
-    end
-end
-
-function matarTodos()
-    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
-    if enemies then
-        for _, v in ipairs(enemies:GetChildren()) do
-            if v:FindFirstChild("Humanoid") then
-                v.Humanoid.Health = 0
-            end
-        end
-    end
-end
-
-function toggleKillAura(valor)
-    killAura = valor
-end
-
-function toggleAutoFarmMadeira(valor)
-    autoFarmMadeira = valor
-end
-
-function toggleAutoFarmPedra(valor)
-    autoFarmPedra = valor
-end
-
-function toggleESPMonstros(valor)
-    espMonstros = valor
-end
-
-function toggleESPItens(valor)
-    espItens = valor
-end
-
-function toggleFullbright(valor)
-    fullbright = valor
-    if valor then
+function toggleFullbright(v)
+    fullbright = v
+    if v then
         Lighting.Brightness = 10
         Lighting.Ambient = Color3.fromRGB(255, 255, 255)
     else
@@ -97,10 +60,28 @@ function toggleFullbright(valor)
     end
 end
 
+function oneHitKill()
+    local e = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+    if e then
+        for _, v in ipairs(e:GetChildren()) do
+            if v:FindFirstChild("Humanoid") then v.Humanoid.Health = 0 end
+        end
+    end
+end
+
+function matarTodos()
+    local e = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+    if e then
+        for _, v in ipairs(e:GetChildren()) do
+            if v:FindFirstChild("Humanoid") then v.Humanoid.Health = 0 end
+        end
+    end
+end
+
 function teleportAcampamento()
-    local camp = workspace:FindFirstChild("Acampamento") or workspace:FindFirstChild("Camp")
-    if camp then
-        player.Character.HumanoidRootPart.CFrame = camp.CFrame + Vector3.new(0, 5, 0)
+    local c = workspace:FindFirstChild("Acampamento") or workspace:FindFirstChild("Camp")
+    if c then
+        player.Character.HumanoidRootPart.CFrame = c.CFrame + Vector3.new(0, 5, 0)
     end
 end
 
@@ -110,24 +91,22 @@ end
 
 RunService.Heartbeat:Connect(function()
     if puloInfinito then
-        local char = player.Character
-        if char and char:FindFirstChild("Humanoid") then
-            local hum = char.Humanoid
-            if hum:GetState() == Enum.HumanoidStateType.Landed then
-                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        local c = player.Character
+        if c and c:FindFirstChild("Humanoid") then
+            local h = c.Humanoid
+            if h:GetState() == Enum.HumanoidStateType.Landed then
+                h:ChangeState(Enum.HumanoidStateType.Jumping)
             end
         end
     end
     
     if killAura then
-        local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
-        if enemies then
-            for _, v in ipairs(enemies:GetChildren()) do
+        local e = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+        if e then
+            for _, v in ipairs(e:GetChildren()) do
                 if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                    local dist = (v.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                    if dist < 50 then
-                        v.Humanoid.Health = 0
-                    end
+                    local d = (v.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                    if d < 50 then v.Humanoid.Health = 0 end
                 end
             end
         end
@@ -144,7 +123,7 @@ screenGui.Name = "ProtonMenu"
 screenGui.ResetOnSpawn = false
 
 -- // ==========================================
--- // SISTEMA DE CHAVE (DIFERENTE)
+-- // JANELA DE CHAVE (CRIADA PRIMEIRO)
 -- // ==========================================
 
 local keyFrame = Instance.new("Frame")
@@ -240,7 +219,7 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.Parent = mainFrame
 mainCorner.CornerRadius = UDim.new(0, 6)
 
--- // TOP BAR
+-- TOP BAR
 local topBar = Instance.new("Frame")
 topBar.Parent = mainFrame
 topBar.Size = UDim2.new(1, 0, 0, 28)
@@ -288,7 +267,7 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = closeBtn
 closeCorner.CornerRadius = UDim.new(0, 3)
 
--- // ABAS
+-- ABAS
 local tabBar = Instance.new("Frame")
 tabBar.Parent = mainFrame
 tabBar.Size = UDim2.new(1, 0, 0, 30)
@@ -334,7 +313,7 @@ for i, tab in ipairs(tabs) do
     tabBtns[tab.id] = btn
 end
 
--- // CONTEUDO
+-- CONTEUDO
 local content = Instance.new("Frame")
 content.Parent = mainFrame
 content.Size = UDim2.new(1, -20, 1, -78)
@@ -344,7 +323,7 @@ content.BackgroundTransparency = 1
 local tabContent = {}
 
 -- // ==========================================
--- // FUNÇÕES
+-- // FUNÇÕES DO MENU
 -- // ==========================================
 
 function atualizarTabs(id)
@@ -600,9 +579,7 @@ tabContent["recursos"] = recursosTab
 
 criarToggle(recursosTab, "AUTO FARM MADEIRA", toggleAutoFarmMadeira, false)
 criarToggle(recursosTab, "AUTO FARM PEDRA", toggleAutoFarmPedra, false)
-criarBotao(recursosTab, "COLETAR TUDO", function()
-    print("Coletar tudo")
-end)
+criarBotao(recursosTab, "COLETAR TUDO", function() print("Coletar tudo") end)
 
 recursosTab.CanvasSize = UDim2.new(0, 0, 0, #recursosTab:GetChildren() * 28 + 20)
 
@@ -655,7 +632,7 @@ coresTab.ScrollBarImageColor3 = corAtual
 coresTab.Visible = false
 tabContent["cores"] = coresTab
 
-local cores = {
+local listaCores = {
     {nome = "VERMELHO", cor = Color3.fromRGB(200, 0, 0)},
     {nome = "AZUL", cor = Color3.fromRGB(0, 100, 255)},
     {nome = "VERDE", cor = Color3.fromRGB(0, 200, 50)},
@@ -664,11 +641,11 @@ local cores = {
     {nome = "BRANCO", cor = Color3.fromRGB(255, 255, 255)}
 }
 
-for _, c in ipairs(cores) do
+for i, c in ipairs(listaCores) do
     local btn = Instance.new("TextButton")
     btn.Parent = coresTab
     btn.Size = UDim2.new(0.45, 0, 0, 30)
-    btn.Position = UDim2.new((_ % 2 == 0) and 0.5 or 0.02, 0, 0, math.floor(_ / 2) * 35 + 5)
+    btn.Position = UDim2.new((i % 2 == 0) and 0.5 or 0.02, 0, 0, math.floor((i - 1) / 2) * 35 + 5)
     btn.BackgroundColor3 = c.cor
     btn.Text = c.nome
     btn.TextColor3 = (c.cor == Color3.fromRGB(255, 255, 255)) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
@@ -696,50 +673,66 @@ for _, c in ipairs(cores) do
         end
         for _, container in pairs(tabContent) do
             container.ScrollBarImageColor3 = corAtual
-            for _, child in ipairs(container:GetChildren()) do
-                if child:IsA("Frame") and child:FindFirstChild("Border") then
-                    child.Border.BackgroundColor3 = corAtual
-                end
-            end
         end
     end)
 end
 
-coresTab.CanvasSize = UDim2.new(0, 0, 0, math.ceil(#cores / 2) * 35 + 20)
+coresTab.CanvasSize = UDim2.new(0, 0, 0, math.ceil(#listaCores / 2) * 35 + 20)
 
 -- // ==========================================
--- // VALIDAR CHAVE
+-- // SISTEMA DE CHAVE (DEFINIDO AGORA)
 -- // ==========================================
 
 local function validarChave()
-    if keyInput.Text == "proton2025" then
+    local texto = keyInput.Text
+    if texto == CHAVE then
+        validado = true
         keyFrame.Visible = false
         abrirMenu()
+        print("Chave correta! Menu aberto.")
     else
         keyError.Text = "chave incorreta"
         keyInput.Text = ""
         keyInput:CaptureFocus()
+        print("Chave incorreta: " .. texto)
     end
 end
 
+-- // Conectar eventos DEPOIS de definir a função
 keyBtn.MouseButton1Click:Connect(validarChave)
+
 keyInput.FocusLost:Connect(function(enter)
-    if enter then validarChave() end
+    if enter then
+        validarChave()
+    end
+end)
+
+-- // Também aceita Enter direto no teclado
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.Return then
+        if keyFrame.Visible then
+            validarChave()
+        end
+    end
 end)
 
 -- // ==========================================
--- // ATALHOS
+-- // ATALHO K
 -- // ==========================================
 
 UserInputService.InputBegan:Connect(function(input, processed)
     if not processed and input.KeyCode == Enum.KeyCode.K then
-        if keyFrame.Visible then
-            validarChave()
+        if not validado then
+            keyFrame.Visible = true
         else
             toggleMenu()
         end
     end
 end)
+
+-- // ==========================================
+-- // FECHAR
+-- // ==========================================
 
 closeBtn.MouseButton1Click:Connect(fecharMenu)
 
@@ -764,5 +757,6 @@ notifCorner.CornerRadius = UDim.new(0, 3)
 
 game:GetService("Debris"):AddItem(notif, 3)
 
-print("PROTON MENU - BETA 1.0")
-print("CHAVE: proton2025")
+print("===== PROTON MENU - BETA 1.0 =====")
+print("Chave: proton2025")
+print("Pressione K para abrir")
