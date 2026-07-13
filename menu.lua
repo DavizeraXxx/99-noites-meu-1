@@ -1,6 +1,5 @@
 -- // ============================================
--- // MENU 99 NOITES - VERSÃO FINAL
--- // CHECKBOX FIX - MAIS LARGO - FUNÇÕES REAIS
+-- // MENU 99 NOITES - VERSÃO FINAL FUNCIONAL
 -- // ============================================
 
 local player = game.Players.LocalPlayer
@@ -99,24 +98,6 @@ keyError.TextColor3 = Color3.fromRGB(255, 50, 50)
 keyError.TextScaled = true
 keyError.Font = Enum.Font.Gotham
 
-local function validarChave()
-    if keyInput.Text == CHAVE_CORRETA then
-        chaveValidada = true
-        keyFrame.Visible = false
-        abrirMenu()
-        print("Chave validada!")
-    else
-        keyError.Text = "Chave incorreta!"
-        keyInput.Text = ""
-        keyInput:CaptureFocus()
-    end
-end
-
-keyBtn.MouseButton1Click:Connect(validarChave)
-keyInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then validarChave() end
-end)
-
 -- // ==========================================
 -- // JANELA PRINCIPAL (MAIS LARGA)
 -- // ==========================================
@@ -171,10 +152,6 @@ closeBtn.BorderSizePixel = 0
 local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = closeBtn
 closeCorner.CornerRadius = UDim.new(0, 3)
-
-closeBtn.MouseButton1Click:Connect(function()
-    fecharMenu()
-end)
 
 -- // ABAS LATERAIS
 local sidebar = Instance.new("Frame")
@@ -246,7 +223,7 @@ contentFrame.BackgroundTransparency = 1
 local abasContent = {}
 
 -- // ==========================================
--- // FUNÇÕES DE CONTROLE
+-- // FUNÇÕES DE CONTROLE (DEFINIDAS PRIMEIRO)
 -- // ==========================================
 
 function atualizarAbas(abaId)
@@ -293,7 +270,148 @@ function toggleMenu()
 end
 
 -- // ==========================================
--- // FUNÇÕES DOS ELEMENTOS (CHECKBOX FIX)
+-- // FUNÇÕES REAIS DO JOGO
+-- // ==========================================
+
+local godMode = false
+local killAura = false
+local puloInfinito = false
+local autoFarmMadeira = false
+local autoFarmPedra = false
+local espMonstros = false
+local espItens = false
+local fullbright = false
+local autoHeal = false
+local fomeInfinita = false
+
+function toggleGodMode(estado)
+    godMode = estado
+    if estado then
+        player.Character.Humanoid.MaxHealth = math.huge
+        player.Character.Humanoid.Health = math.huge
+        print("God Mode ativado")
+    else
+        player.Character.Humanoid.MaxHealth = 100
+        player.Character.Humanoid.Health = 100
+        print("God Mode desativado")
+    end
+end
+
+function togglePuloInfinito(estado)
+    puloInfinito = estado
+    print("Pulo Infinito:", estado)
+end
+
+function oneHitKill()
+    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+    if enemies then
+        for _, enemy in ipairs(enemies:GetChildren()) do
+            if enemy:FindFirstChild("Humanoid") then
+                enemy.Humanoid.Health = 0
+            end
+        end
+        print("One Hit Kill executado")
+    else
+        print("Nenhum inimigo encontrado")
+    end
+end
+
+function matarTodos()
+    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+    if enemies then
+        for _, enemy in ipairs(enemies:GetChildren()) do
+            if enemy:FindFirstChild("Humanoid") then
+                enemy.Humanoid.Health = 0
+            end
+        end
+        print("Todos os inimigos mortos")
+    else
+        print("Nenhum inimigo encontrado")
+    end
+end
+
+function toggleKillAura(estado)
+    killAura = estado
+    print("Kill Aura:", estado)
+end
+
+function toggleAutoFarmMadeira(estado)
+    autoFarmMadeira = estado
+    print("Auto Farm Madeira:", estado)
+end
+
+function toggleAutoFarmPedra(estado)
+    autoFarmPedra = estado
+    print("Auto Farm Pedra:", estado)
+end
+
+function toggleESPMonstros(estado)
+    espMonstros = estado
+    print("ESP Monstros:", estado)
+end
+
+function toggleESPItens(estado)
+    espItens = estado
+    print("ESP Itens:", estado)
+end
+
+function toggleFullbright(estado)
+    fullbright = estado
+    if estado then
+        game.Lighting.Brightness = 10
+        game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        print("Fullbright ativado")
+    else
+        game.Lighting.Brightness = 1
+        game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
+        print("Fullbright desativado")
+    end
+end
+
+function teleportAcampamento()
+    local acampamento = workspace:FindFirstChild("Acampamento") or workspace:FindFirstChild("Camp")
+    if acampamento then
+        player.Character.HumanoidRootPart.CFrame = acampamento.CFrame + Vector3.new(0, 5, 0)
+        print("Teleportado para o acampamento")
+    else
+        print("Acampamento não encontrado")
+    end
+end
+
+-- // ==========================================
+-- // LOOPS DAS FUNÇÕES
+-- // ==========================================
+
+RunService.Heartbeat:Connect(function()
+    -- Pulo Infinito
+    if puloInfinito then
+        local char = player.Character
+        if char and char:FindFirstChild("Humanoid") then
+            local humanoid = char.Humanoid
+            if humanoid:GetState() == Enum.HumanoidStateType.Landed then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+    
+    -- Kill Aura
+    if killAura then
+        local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+        if enemies then
+            for _, enemy in ipairs(enemies:GetChildren()) do
+                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                    local distancia = (enemy.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                    if distancia < 50 then
+                        enemy.Humanoid.Health = 0
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- // ==========================================
+-- // FUNÇÕES DOS ELEMENTOS DA UI
 -- // ==========================================
 
 function criarToggle(container, texto, callback, valorInicial)
@@ -323,7 +441,7 @@ function criarToggle(container, texto, callback, valorInicial)
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
     
-    -- CHECKBOX (interruptor visual)
+    -- CHECKBOX
     local checkbox = Instance.new("ImageButton")
     checkbox.Parent = frame
     checkbox.Size = UDim2.new(0, 20, 0, 20)
@@ -337,7 +455,6 @@ function criarToggle(container, texto, callback, valorInicial)
     checkboxCorner.Parent = checkbox
     checkboxCorner.CornerRadius = UDim.new(0, 3)
     
-    -- Checkmark (visto)
     local checkmark = Instance.new("TextLabel")
     checkmark.Parent = checkbox
     checkmark.Size = UDim2.new(1, 0, 1, 0)
@@ -503,171 +620,6 @@ function criarStatus(container, texto, cor)
 end
 
 -- // ==========================================
--- // FUNÇÕES REAIS DO JOGO
--- // ==========================================
-
--- // Variáveis de estado
-local godMode = false
-local killAura = false
-local puloInfinito = false
-local autoFarmMadeira = false
-local autoFarmPedra = false
-local espMonstros = false
-local espItens = false
-local fullbright = false
-local autoHeal = false
-local fomeInfinita = false
-
--- // God Mode
-local function toggleGodMode(estado)
-    godMode = estado
-    if estado then
-        player.Character.Humanoid.MaxHealth = math.huge
-        player.Character.Humanoid.Health = math.huge
-        print("God Mode ativado")
-    else
-        player.Character.Humanoid.MaxHealth = 100
-        player.Character.Humanoid.Health = 100
-        print("God Mode desativado")
-    end
-end
-
--- // Pulo Infinito
-local function togglePuloInfinito(estado)
-    puloInfinito = estado
-    if estado then
-        print("Pulo Infinito ativado")
-    else
-        print("Pulo Infinito desativado")
-    end
-end
-
--- // Loop do Pulo Infinito
-RunService.Heartbeat:Connect(function()
-    if puloInfinito then
-        local char = player.Character
-        if char and char:FindFirstChild("Humanoid") then
-            local humanoid = char.Humanoid
-            if humanoid:GetState() == Enum.HumanoidStateType.Landed then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end
-    end
-end)
-
--- // One Hit Kill
-local function oneHitKill()
-    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
-    if enemies then
-        for _, enemy in ipairs(enemies:GetChildren()) do
-            if enemy:FindFirstChild("Humanoid") then
-                enemy.Humanoid.Health = 0
-            end
-        end
-        print("One Hit Kill executado")
-    else
-        print("Nenhum inimigo encontrado")
-    end
-end
-
--- // Matar Todos
-local function matarTodos()
-    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
-    if enemies then
-        for _, enemy in ipairs(enemies:GetChildren()) do
-            if enemy:FindFirstChild("Humanoid") then
-                enemy.Humanoid.Health = 0
-            end
-        end
-        print("Todos os inimigos mortos")
-    else
-        print("Nenhum inimigo encontrado")
-    end
-end
-
--- // Kill Aura
-local function toggleKillAura(estado)
-    killAura = estado
-    if estado then
-        print("Kill Aura ativada")
-    else
-        print("Kill Aura desativada")
-    end
-end
-
--- // Loop Kill Aura
-RunService.Heartbeat:Connect(function()
-    if killAura then
-        local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
-        if enemies then
-            for _, enemy in ipairs(enemies:GetChildren()) do
-                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                    local distancia = (enemy.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                    if distancia < 50 then
-                        enemy.Humanoid.Health = 0
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- // Auto Farm
-local function toggleAutoFarmMadeira(estado)
-    autoFarmMadeira = estado
-    print("Auto Farm Madeira:", estado)
-end
-
-local function toggleAutoFarmPedra(estado)
-    autoFarmPedra = estado
-    print("Auto Farm Pedra:", estado)
-end
-
--- // ESP
-local function toggleESPMonstros(estado)
-    espMonstros = estado
-    if estado then
-        print("ESP Monstros ativado")
-    else
-        print("ESP Monstros desativado")
-    end
-end
-
-local function toggleESPItens(estado)
-    espItens = estado
-    if estado then
-        print("ESP Itens ativado")
-    else
-        print("ESP Itens desativado")
-    end
-end
-
--- // Fullbright
-local function toggleFullbright(estado)
-    fullbright = estado
-    if estado then
-        game.Lighting.Brightness = 10
-        game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-        print("Fullbright ativado")
-    else
-        game.Lighting.Brightness = 1
-        game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
-        print("Fullbright desativado")
-    end
-end
-
--- // Teleport
-local function teleportAcampamento()
-    local acampamento = workspace:FindFirstChild("Acampamento") or workspace:FindFirstChild("Camp")
-    if acampamento then
-        player.Character.HumanoidRootPart.CFrame = acampamento.CFrame + Vector3.new(0, 5, 0)
-        print("Teleportado para o acampamento")
-    else
-        print("Acampamento não encontrado")
-    end
-end
-
--- // ==========================================
 -- // CRIAÇÃO DAS ABAS
 -- // ==========================================
 
@@ -687,19 +639,11 @@ criarStatus(sobrevivenciaContainer, "Energia: 100%", Color3.fromRGB(100, 200, 25
 criarStatus(sobrevivenciaContainer, "Vida: 100%", Color3.fromRGB(255, 100, 100))
 criarToggle(sobrevivenciaContainer, "Auto Heal", function(estado)
     autoHeal = estado
-    if estado then
-        print("Auto Heal ativado")
-    else
-        print("Auto Heal desativado")
-    end
+    print("Auto Heal:", estado)
 end, true)
 criarToggle(sobrevivenciaContainer, "Fome Infinita", function(estado)
     fomeInfinita = estado
-    if estado then
-        print("Fome Infinita ativado")
-    else
-        print("Fome Infinita desativado")
-    end
+    print("Fome Infinita:", estado)
 end, false)
 
 sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 30 + 20)
@@ -737,7 +681,6 @@ criarToggle(recursosContainer, "Auto Farm Madeira", toggleAutoFarmMadeira, false
 criarToggle(recursosContainer, "Auto Farm Pedra", toggleAutoFarmPedra, false)
 criarBotao(recursosContainer, "Coletar Tudo", Color3.fromRGB(200, 150, 0), function()
     print("Coletar Tudo")
-    -- Código para coletar tudo
 end)
 
 recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 30 + 20)
@@ -783,4 +726,49 @@ movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildr
 -- // CONFIG
 local configContainer = Instance.new("ScrollingFrame")
 configContainer.Parent = contentFrame
-configContainer.Size = UDim2.new(1, 
+configContainer.Size = UDim2.new(1, 0, 1, 0)
+configContainer.BackgroundTransparency = 1
+configContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+configContainer.ScrollBarThickness = 3
+configContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
+configContainer.Visible = false
+abasContent["config"] = configContainer
+
+criarBotao(configContainer, "Resetar Menu", Color3.fromRGB(200, 100, 0), function()
+    print("Resetar Menu")
+end)
+criarBotao(configContainer, "Fechar Menu", Color3.fromRGB(200, 0, 0), function()
+    fecharMenu()
+end)
+
+configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() * 30 + 20)
+
+-- // ==========================================
+-- // EVENTOS GLOBAIS
+-- // ==========================================
+
+-- // Validar chave
+local function validarChave()
+    if keyInput.Text == CHAVE_CORRETA then
+        chaveValidada = true
+        keyFrame.Visible = false
+        abrirMenu()
+        print("Chave validada!")
+    else
+        keyError.Text = "Chave incorreta!"
+        keyInput.Text = ""
+        keyInput:CaptureFocus()
+    end
+end
+
+keyBtn.MouseButton1Click:Connect(validarChave)
+keyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then validarChave() end
+end)
+
+-- // Atalho K
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        toggleMenu()
+    end
+end
