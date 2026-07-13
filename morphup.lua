@@ -1,546 +1,590 @@
--- // ============================================
--- // PROTON MENU - MORPHUP! EDITION
--- // CORRIGIDO - ABAS FUNCIONANDO
--- // ============================================
+-- Proton Hub v7 - MorphUp (FUNCIONAL!)
+-- Coleta automática de Berries com movimento natural
 
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
 
--- // ==========================================
--- // VARIAVEIS
--- // ==========================================
+-- Variáveis
+local FarmEnabled = false
+local PvPEnabled = false
+local Target = nil
+local IsMoving = false
+local CollectedCount = 0
+local CollectRadius = 100
+local MenuMinimized = false
 
-local menuAberto = true
-local corAtual = Color3.fromRGB(200, 0, 0)
+-- =============================================
+-- INTERFACE (Menu Completo)
+-- =============================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ProtonHub"
+ScreenGui.Parent = Player.PlayerGui
+ScreenGui.ResetOnSpawn = false
 
--- // ==========================================
--- // ESTADOS DAS FUNÇÕES
--- // ==========================================
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 440, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -220, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
 
-local estados = {
-    autoFarmXP = false,
-    autoEvolve = false,
-    autoPvP = false,
-    attackAll = false,
-    unlockAll = false
-}
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 16)
+Corner.Parent = MainFrame
 
--- // ==========================================
--- // FUNÇÕES DO JOGO (MELHORADAS)
--- // ==========================================
+local Glass = Instance.new("Frame")
+Glass.Size = UDim2.new(1, 0, 1, 0)
+Glass.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Glass.BackgroundTransparency = 0.93
+Glass.BorderSizePixel = 0
+Glass.Parent = MainFrame
 
--- // AUTO FARM XP - Coleta XP automático
-function toggleAutoFarmXP()
-    estados.autoFarmXP = not estados.autoFarmXP
-    print("Auto Farm XP:", estados.autoFarmXP and "ON" or "OFF")
-end
+local GlassCorner = Instance.new("UICorner")
+GlassCorner.CornerRadius = UDim.new(0, 16)
+GlassCorner.Parent = Glass
 
--- // AUTO EVOLVE - Evolui automaticamente
-function toggleAutoEvolve()
-    estados.autoEvolve = not estados.autoEvolve
-    print("Auto Evolve:", estados.autoEvolve and "ON" or "OFF")
-end
+local Shadow = Instance.new("ImageLabel")
+Shadow.Size = UDim2.new(1, 30, 1, 30)
+Shadow.Position = UDim2.new(0, -15, 0, -15)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://1316045194"
+Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+Shadow.ImageTransparency = 0.5
+Shadow.ZIndex = 0
+Shadow.Parent = MainFrame
 
--- // AUTO PVP - Luta automaticamente contra outros jogadores
-function toggleAutoPvP()
-    estados.autoPvP = not estados.autoPvP
-    print("Auto PvP:", estados.autoPvP and "ON" or "OFF")
-end
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "🍓 PROTON HUB v7"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+Title.TextStrokeTransparency = 0.3
+Title.Parent = MainFrame
 
--- // ATTACK ALL - Ataca todos os inimigos próximos
-function toggleAttackAll()
-    estados.attackAll = not estados.attackAll
-    print("Attack All:", estados.attackAll and "ON" or "OFF")
-end
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, 0, 0, 20)
+SubTitle.Position = UDim2.new(0, 0, 0, 45)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "Farm de Berries • Movimento Natural"
+SubTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
+SubTitle.Font = Enum.Font.Gotham
+SubTitle.TextSize = 14
+SubTitle.Parent = MainFrame
 
--- // DESTRAVAR TODAS AS FORMAS (MELHORADO)
-function unlockAllForms()
-    print("Tentando destravar todas as formas...")
-    
-    -- 1. Tentar via ReplicatedStorage (remotes)
-    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("UnlockAll")
-    if remote then
-        remote:FireServer()
-        print("Remote UnlockAll acionado!")
-        return
-    end
-    
-    -- 2. Tentar via GUI (botões de compra)
-    local gui = player.PlayerGui:FindFirstChild("MorphGUI") or player.PlayerGui:FindFirstChild("MainGUI")
-    if gui then
-        for _, v in ipairs(gui:GetDescendants()) do
-            if v:IsA("TextButton") and (v.Text:lower():find("unlock") or v.Text:lower():find("buy") or v.Text:lower():find("comprar")) then
-                v:Click()
-                wait(0.1)
-            end
-        end
-        print("Botões de unlock clicados!")
-        return
-    end
-    
-    -- 3. Tentar via Workspace (objetos interagíveis)
-    for _, v in ipairs(Workspace:GetDescendants()) do
-        if v:IsA("Part") and v:FindFirstChild("ClickDetector") then
-            v.ClickDetector:Click()
-            wait(0.1)
-        end
-    end
-    
-    print("Tentativas de unlock concluídas.")
-end
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(0.9, 0, 0, 2)
+Line.Position = UDim2.new(0.05, 0, 0, 70)
+Line.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+Line.BackgroundTransparency = 0.3
+Line.BorderSizePixel = 0
+Line.Parent = MainFrame
 
--- // ==========================================
--- // LOOPS (MELHORADOS)
--- // ==========================================
+-- Status
+local StatusFarm = Instance.new("TextLabel")
+StatusFarm.Size = UDim2.new(0.45, 0, 0, 25)
+StatusFarm.Position = UDim2.new(0.03, 0, 0, 85)
+StatusFarm.BackgroundTransparency = 1
+StatusFarm.Text = "🍓 Farm: OFF"
+StatusFarm.TextColor3 = Color3.fromRGB(255, 80, 80)
+StatusFarm.Font = Enum.Font.GothamBold
+StatusFarm.TextSize = 15
+StatusFarm.TextXAlignment = Enum.TextXAlignment.Left
+StatusFarm.Parent = MainFrame
 
-RunService.Heartbeat:Connect(function()
-    -- AUTO FARM XP
-    if estados.autoFarmXP then
-        -- Procura por XP no mapa
-        local xpParts = Workspace:FindFirstChild("XP") or Workspace:FindFirstChild("Experience") or Workspace:FindFirstChild("Exp")
-        if xpParts then
-            for _, v in ipairs(xpParts:GetChildren()) do
-                if v:IsA("BasePart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = v.CFrame + Vector3.new(0, 3, 0)
-                    wait(0.1)
-                end
-            end
-        else
-            -- Fallback: procura por qualquer parte com nome "XP"
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v:IsA("BasePart") and v.Name:lower():find("xp") then
-                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                        player.Character.HumanoidRootPart.CFrame = v.CFrame + Vector3.new(0, 3, 0)
-                        wait(0.1)
-                    end
-                end
-            end
-        end
-    end
-    
-    -- AUTO PVP
-    if estados.autoPvP then
-        for _, v in ipairs(Workspace:GetChildren()) do
-            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= player.Character then
-                local dist = (v.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                if dist < 100 then
-                    player.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-                    if player.Character:FindFirstChild("Humanoid") then
-                        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Attacking)
-                    end
-                    wait(0.5)
-                end
-            end
-        end
-    end
-    
-    -- ATTACK ALL
-    if estados.attackAll then
-        for _, v in ipairs(Workspace:GetChildren()) do
-            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= player.Character then
-                local dist = (v.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                if dist < 80 then
-                    if player.Character:FindFirstChild("Humanoid") then
-                        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Attacking)
-                    end
-                    wait(0.2)
-                end
-            end
-        end
-    end
-end)
+local StatusPvP = Instance.new("TextLabel")
+StatusPvP.Size = UDim2.new(0.45, 0, 0, 25)
+StatusPvP.Position = UDim2.new(0.52, 0, 0, 85)
+StatusPvP.BackgroundTransparency = 1
+StatusPvP.Text = "⚔️ PvP: OFF"
+StatusPvP.TextColor3 = Color3.fromRGB(255, 80, 80)
+StatusPvP.Font = Enum.Font.GothamBold
+StatusPvP.TextSize = 15
+StatusPvP.TextXAlignment = Enum.TextXAlignment.Left
+StatusPvP.Parent = MainFrame
 
--- // ==========================================
--- // CRIAR GUI
--- // ==========================================
+local StatusItems = Instance.new("TextLabel")
+StatusItems.Size = UDim2.new(1, 0, 0, 20)
+StatusItems.Position = UDim2.new(0.03, 0, 0, 110)
+StatusItems.BackgroundTransparency = 1
+StatusItems.Text = "🍓 Berries coletadas: 0"
+StatusItems.TextColor3 = Color3.fromRGB(100, 255, 200)
+StatusItems.Font = Enum.Font.Gotham
+StatusItems.TextSize = 13
+StatusItems.TextXAlignment = Enum.TextXAlignment.Left
+StatusItems.Parent = MainFrame
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
-screenGui.Name = "ProtonMenuMorphUp"
-screenGui.ResetOnSpawn = false
+local StatusBerry = Instance.new("TextLabel")
+StatusBerry.Size = UDim2.new(1, 0, 0, 20)
+StatusBerry.Position = UDim2.new(0.03, 0, 0, 130)
+StatusBerry.BackgroundTransparency = 1
+StatusBerry.Text = "📡 Berries no mapa: 0"
+StatusBerry.TextColor3 = Color3.fromRGB(200, 200, 255)
+StatusBerry.Font = Enum.Font.Gotham
+StatusBerry.TextSize = 13
+StatusBerry.TextXAlignment = Enum.TextXAlignment.Left
+StatusBerry.Parent = MainFrame
 
--- // ==========================================
--- // JANELA PRINCIPAL (400x300)
--- // ==========================================
-
-local mainFrame = Instance.new("Frame")
-mainFrame.Parent = screenGui
-mainFrame.Size = UDim2.new(0, 500, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-mainFrame.BorderSizePixel = 2
-mainFrame.BorderColor3 = corAtual
-mainFrame.Visible = true
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.BackgroundTransparency = 0.05
-
-local mainCorner = Instance.new("UICorner")
-mainCorner.Parent = mainFrame
-mainCorner.CornerRadius = UDim.new(0, 6)
-
--- // ==========================================
--- // TOP BAR
--- // ==========================================
-
-local topBar = Instance.new("Frame")
-topBar.Parent = mainFrame
-topBar.Size = UDim2.new(1, 0, 0, 26)
-topBar.BackgroundColor3 = corAtual
-topBar.BorderSizePixel = 0
-
-local topCorner = Instance.new("UICorner")
-topCorner.Parent = topBar
-topCorner.CornerRadius = UDim.new(0, 6)
-
-local titleLbl = Instance.new("TextLabel")
-titleLbl.Parent = topBar
-titleLbl.Size = UDim2.new(0.6, 0, 1, 0)
-titleLbl.Position = UDim2.new(0, 10, 0, 0)
-titleLbl.BackgroundTransparency = 1
-titleLbl.Text = "PROTON MENU"
-titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLbl.TextScaled = true
-titleLbl.Font = Enum.Font.GothamBold
-titleLbl.TextXAlignment = Enum.TextXAlignment.Left
-
-local versionLbl = Instance.new("TextLabel")
-versionLbl.Parent = topBar
-versionLbl.Size = UDim2.new(0.25, 0, 1, 0)
-versionLbl.Position = UDim2.new(0.55, 0, 0, 0)
-versionLbl.BackgroundTransparency = 1
-versionLbl.Text = "morphup"
-versionLbl.TextColor3 = Color3.fromRGB(200, 200, 200)
-versionLbl.TextScaled = true
-versionLbl.Font = Enum.Font.Gotham
-versionLbl.TextXAlignment = Enum.TextXAlignment.Center
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Parent = topBar
-closeBtn.Size = UDim2.new(0, 26, 0, 26)
-closeBtn.Position = UDim2.new(1, -28, 0, 0)
-closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextScaled = true
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.BorderSizePixel = 0
-closeBtn.BackgroundTransparency = 0.2
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.Parent = closeBtn
-closeCorner.CornerRadius = UDim.new(0, 4)
-
-closeBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-end)
-
-closeBtn.MouseEnter:Connect(function()
-    closeBtn.BackgroundTransparency = 0
-end)
-closeBtn.MouseLeave:Connect(function()
-    closeBtn.BackgroundTransparency = 0.2
-end)
-
--- // ==========================================
--- // ABAS
--- // ==========================================
-
-local tabBar = Instance.new("Frame")
-tabBar.Parent = mainFrame
-tabBar.Size = UDim2.new(1, 0, 0, 26)
-tabBar.Position = UDim2.new(0, 0, 0, 26)
-tabBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-tabBar.BorderSizePixel = 0
-
-local tabs = {
-    {id = "farm", nome = "FARM"},
-    {id = "pvp", nome = "PVP"},
-    {id = "unlock", nome = "UNLOCK"},
-    {id = "config", nome = "CONFIG"}
-}
-
-local tabBtns = {}
-local tabAtual = "farm"
-
-for i, tab in ipairs(tabs) do
+-- =============================================
+-- BOTÕES
+-- =============================================
+local function CreateButton(text, yPos, color, callback)
     local btn = Instance.new("TextButton")
-    btn.Parent = tabBar
-    btn.Size = UDim2.new(1 / #tabs, -2, 1, -4)
-    btn.Position = UDim2.new((i - 1) / #tabs, 1, 0, 2)
-    btn.BackgroundColor3 = (i == 1) and corAtual or Color3.fromRGB(20, 20, 20)
-    btn.Text = tab.nome
-    btn.TextColor3 = (i == 1) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamSemibold
-    btn.BorderSizePixel = 0
+    btn.Size = UDim2.new(0.85, 0, 0, 38)
+    btn.Position = UDim2.new(0.075, 0, 0, yPos)
+    btn.BackgroundColor3 = color
     btn.BackgroundTransparency = 0.2
-    btn.Name = tab.id
-    
-    btn.MouseButton1Click:Connect(function()
-        for _, b in pairs(tabBtns) do
-            b.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-            b.TextColor3 = Color3.fromRGB(150, 150, 150)
-            b.BackgroundTransparency = 0.2
-        end
-        btn.BackgroundColor3 = corAtual
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.BackgroundTransparency = 0
-        tabAtual = tab.id
-        atualizarTabs(tab.id)
-    end)
-    
-    tabBtns[tab.id] = btn
-end
-
--- // ==========================================
--- // CONTEUDO (SCROLL)
--- // ==========================================
-
-local content = Instance.new("ScrollingFrame")
-content.Parent = mainFrame
-content.Size = UDim2.new(1, -12, 1, -72)
-content.Position = UDim2.new(0, 6, 0, 56)
-content.BackgroundTransparency = 1
-content.CanvasSize = UDim2.new(0, 0, 0, 0)
-content.ScrollBarThickness = 3
-content.ScrollBarImageColor3 = corAtual
-
-local tabContent = {}
-
-function atualizarTabs(id)
-    for k, v in pairs(tabContent) do
-        v.Visible = (k == id)
-    end
-end
-
--- // ==========================================
--- // CRIAR ELEMENTOS (VERSÃO COMPACTA)
--- // ==========================================
-
-function criarToggle(container, texto, callback, padrao)
-    local frame = Instance.new("Frame")
-    frame.Parent = container
-    frame.Size = UDim2.new(1, -10, 0, 26)
-    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
-    frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-    frame.BorderSizePixel = 0
-    frame.BackgroundTransparency = 0.3
-    
-    local border = Instance.new("Frame")
-    border.Parent = frame
-    border.Size = UDim2.new(1, 0, 0, 1)
-    border.Position = UDim2.new(0, 0, 1, -1)
-    border.BackgroundColor3 = corAtual
-    border.BorderSizePixel = 0
-    border.BackgroundTransparency = 0.5
-    
-    local label = Instance.new("TextLabel")
-    label.Parent = frame
-    label.Size = UDim2.new(0.7, 0, 1, 0)
-    label.Position = UDim2.new(0, 6, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = texto
-    label.TextColor3 = Color3.fromRGB(220, 220, 220)
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.TextScaled = true
-    label.Font = Enum.Font.Gotham
-    
-    local check = Instance.new("ImageButton")
-    check.Parent = frame
-    check.Size = UDim2.new(0, 18, 0, 18)
-    check.Position = UDim2.new(1, -26, 0.5, -9)
-    check.BackgroundColor3 = padrao and Color3.fromRGB(0, 180, 50) or Color3.fromRGB(50, 50, 50)
-    check.BorderSizePixel = 1
-    check.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    check.Image = ""
-    
-    local checkCorner = Instance.new("UICorner")
-    checkCorner.Parent = check
-    checkCorner.CornerRadius = UDim.new(0, 2)
-    
-    local mark = Instance.new("TextLabel")
-    mark.Parent = check
-    mark.Size = UDim2.new(1, 0, 1, 0)
-    mark.BackgroundTransparency = 1
-    mark.Text = padrao and "✓" or ""
-    mark.TextColor3 = Color3.fromRGB(255, 255, 255)
-    mark.TextScaled = true
-    mark.Font = Enum.Font.GothamBold
-    
-    local estado = padrao or false
-    
-    local function toggle()
-        estado = not estado
-        if estado then
-            check.BackgroundColor3 = Color3.fromRGB(0, 180, 50)
-            mark.Text = "✓"
-        else
-            check.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            mark.Text = ""
-        end
-        callback()
-    end
-    
-    check.MouseButton1Click:Connect(toggle)
-    label.MouseButton1Click:Connect(toggle)
-    frame.MouseButton1Click:Connect(toggle)
-    
-    return frame
-end
-
-function criarBotao(container, texto, callback)
-    local btn = Instance.new("TextButton")
-    btn.Parent = container
-    btn.Size = UDim2.new(1, -10, 0, 26)
-    btn.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
-    btn.BackgroundColor3 = corAtual
-    btn.Text = texto
+    btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamSemibold
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 15
     btn.BorderSizePixel = 0
-    btn.BackgroundTransparency = 0.3
+    btn.Parent = MainFrame
     
     local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 10)
     btnCorner.Parent = btn
-    btnCorner.CornerRadius = UDim.new(0, 3)
     
     btn.MouseButton1Click:Connect(callback)
     
     btn.MouseEnter:Connect(function()
-        btn.BackgroundTransparency = 0.1
+        btn.BackgroundTransparency = 0.05
+        btn.TextSize = 16
     end)
     btn.MouseLeave:Connect(function()
-        btn.BackgroundTransparency = 0.3
+        btn.BackgroundTransparency = 0.2
+        btn.TextSize = 15
     end)
     
     return btn
 end
 
--- // ==========================================
--- // CRIAR ABAS (COM ELEMENTOS)
--- // ==========================================
+-- Botão Farm (Agora com Berries!)
+CreateButton("🍓 Farm de Berries", 160, Color3.fromRGB(0, 180, 120), function()
+    FarmEnabled = not FarmEnabled
+    StatusFarm.Text = FarmEnabled and "🍓 Farm: ON ✅" or "🍓 Farm: OFF"
+    StatusFarm.TextColor3 = FarmEnabled and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 80, 80)
+    if FarmEnabled then
+        CollectedCount = 0
+        print("🍓 Farm de Berries ATIVADO!")
+    else
+        if Humanoid then
+            Humanoid:MoveTo(Humanoid.RootPart.Position)
+        end
+        print("⏸️ Farm DESATIVADO")
+    end
+end)
 
--- // ABA FARM
-local farmTab = Instance.new("Frame")
-farmTab.Parent = content
-farmTab.Size = UDim2.new(1, 0, 1, 0)
-farmTab.BackgroundTransparency = 1
-farmTab.Visible = true
-tabContent["farm"] = farmTab
-
-criarToggle(farmTab, "AUTO FARM XP", toggleAutoFarmXP, false)
-criarToggle(farmTab, "AUTO EVOLVE", toggleAutoEvolve, false)
-criarBotao(farmTab, "DESTRAVAR TODAS FORMAS", unlockAllForms)
-
--- Atualizar CanvasSize da aba farm
-local function atualizarCanvas()
-    local maxHeight = 0
-    for _, tab in pairs(tabContent) do
-        if tab.Visible then
-            local children = tab:GetChildren()
-            if #children > 0 then
-                local lastChild = children[#children]
-                maxHeight = lastChild.Position.Y.Offset + lastChild.Size.Y.Offset + 20
+-- Botão PvP
+CreateButton("⚔️ PvP Automático", 208, Color3.fromRGB(220, 60, 60), function()
+    PvPEnabled = not PvPEnabled
+    StatusPvP.Text = PvPEnabled and "⚔️ PvP: ON ✅" or "⚔️ PvP: OFF"
+    StatusPvP.TextColor3 = PvPEnabled and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 80, 80)
+    if PvPEnabled then
+        Target = nil
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= Player and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+                Target = v
+                break
             end
         end
     end
-    content.CanvasSize = UDim2.new(0, 0, 0, math.max(maxHeight, 300))
+end)
+
+-- Botão Raio
+CreateButton("📡 Aumentar Raio (+10)", 256, Color3.fromRGB(100, 100, 200), function()
+    CollectRadius = math.min(CollectRadius + 10, 200)
+    StatusBerry.Text = "📡 Raio: " .. CollectRadius .. " studs"
+    print("📡 Raio: " .. CollectRadius .. " studs")
+end)
+
+-- Botão Reset
+CreateButton("🔄 Resetar posição", 304, Color3.fromRGB(200, 150, 0), function()
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local root = Character.HumanoidRootPart
+        root.CFrame = root.CFrame + Vector3.new(math.random(-3, 3), 0, math.random(-3, 3))
+        print("🔄 Resetando posição...")
+    end
+end)
+
+-- Botão Minimizar
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 32, 0, 32)
+MinimizeBtn.Position = UDim2.new(1, -80, 0, 5)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+MinimizeBtn.BackgroundTransparency = 0.3
+MinimizeBtn.Text = "━"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 22
+MinimizeBtn.BorderSizePixel = 0
+MinimizeBtn.Parent = MainFrame
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(1, 0)
+MinCorner.Parent = MinimizeBtn
+
+MinimizeBtn.MouseEnter:Connect(function()
+    MinimizeBtn.BackgroundTransparency = 0
+end)
+MinimizeBtn.MouseLeave:Connect(function()
+    MinimizeBtn.BackgroundTransparency = 0.3
+end)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    MenuMinimized = not MenuMinimized
+    if MenuMinimized then
+        MainFrame.Size = UDim2.new(0, 200, 0, 45)
+        MinimizeBtn.Text = "□"
+        for _, child in pairs(MainFrame:GetChildren()) do
+            if child ~= Title and child ~= MinimizeBtn and child ~= CloseBtn and child ~= Shadow and child ~= Glass then
+                child.Visible = false
+            end
+        end
+        Title.Text = "🍓 PROTON v7"
+        Title.TextSize = 18
+    else
+        MainFrame.Size = UDim2.new(0, 440, 0, 420)
+        MinimizeBtn.Text = "━"
+        for _, child in pairs(MainFrame:GetChildren()) do
+            child.Visible = true
+        end
+        Title.Text = "🍓 PROTON HUB v7"
+        Title.TextSize = 24
+    end
+end)
+
+-- Botão Fechar
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+CloseBtn.Position = UDim2.new(1, -42, 0, 5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseBtn.BackgroundTransparency = 0.3
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 20
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(1, 0)
+CloseCorner.Parent = CloseBtn
+
+CloseBtn.MouseEnter:Connect(function()
+    CloseBtn.BackgroundTransparency = 0
+end)
+CloseBtn.MouseLeave:Connect(function()
+    CloseBtn.BackgroundTransparency = 0.3
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- =============================================
+-- SISTEMA DE DRAG
+-- =============================================
+local dragging = false
+local dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X, 
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- =============================================
+-- SISTEMA DE FARM (COM BERRY!)
+-- =============================================
+
+-- Função para encontrar Berries
+local function FindNearestBerry()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
+    
+    local root = character.HumanoidRootPart
+    local nearest = nil
+    local nearestDist = CollectRadius
+    
+    -- Procura na pasta Berries
+    local berriesFolder = workspace:FindFirstChild("Berries")
+    if berriesFolder then
+        for _, berry in pairs(berriesFolder:GetChildren()) do
+            if berry:IsA("BasePart") and berry.Name == "Berry" then
+                local distance = (root.Position - berry.Position).Magnitude
+                if distance < nearestDist and distance > 1.5 then
+                    nearest = berry
+                    nearestDist = distance
+                end
+            end
+        end
+    end
+    
+    return nearest
 end
 
--- Forçar atualização inicial
-task.wait(0.1)
-atualizarCanvas()
+-- Função para contar Berries no mapa
+local function CountBerries()
+    local count = 0
+    local berriesFolder = workspace:FindFirstChild("Berries")
+    if berriesFolder then
+        for _, berry in pairs(berriesFolder:GetChildren()) do
+            if berry:IsA("BasePart") and berry.Name == "Berry" then
+                count = count + 1
+            end
+        end
+    end
+    return count
+end
 
--- // ABA PVP
-local pvpTab = Instance.new("Frame")
-pvpTab.Parent = content
-pvpTab.Size = UDim2.new(1, 0, 1, 0)
-pvpTab.BackgroundTransparency = 1
-pvpTab.Visible = false
-tabContent["pvp"] = pvpTab
+-- Função para coletar a Berry
+local function CollectBerry(berry)
+    if not berry or not berry.Parent then return false end
+    
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return false end
+    
+    local root = character.HumanoidRootPart
+    local distance = (root.Position - berry.Position).Magnitude
+    
+    -- Se já está perto, coleta
+    if distance < 3 then
+        pcall(function()
+            -- Toca na berry
+            firetouchinterest(character.HumanoidRootPart, berry, 0)
+            task.wait(0.05)
+            firetouchinterest(character.HumanoidRootPart, berry, 1)
+            
+            -- Tenta ClickDetector (se tiver)
+            if berry:FindFirstChild("ClickDetector") then
+                fireclickdetector(berry.ClickDetector)
+            end
+            
+            -- Clique do mouse
+            mouse1click()
+        end)
+        
+        -- Verifica se foi coletada
+        task.wait(0.3)
+        if not berry.Parent then
+            CollectedCount = CollectedCount + 1
+            StatusItems.Text = "🍓 Berries coletadas: " .. CollectedCount
+            print("🍓 Coletou uma Berry! Total: " .. CollectedCount)
+            return true
+        end
+        return false
+    end
+    
+    -- Calcula o tempo real de caminhada (velocidade normal)
+    local walkSpeed = Humanoid.WalkSpeed or 16
+    local timeToReach = distance / walkSpeed
+    
+    -- Adiciona pequeno delay (simula hesitação humana)
+    timeToReach = timeToReach + math.random(3, 8) / 10
+    
+    -- Move até a berry
+    Humanoid:MoveTo(berry.Position)
+    
+    -- Espera o tempo calculado
+    task.wait(timeToReach)
+    
+    -- Tenta coletar
+    if berry.Parent and (root.Position - berry.Position).Magnitude < 4 then
+        pcall(function()
+            firetouchinterest(character.HumanoidRootPart, berry, 0)
+            task.wait(0.05)
+            firetouchinterest(character.HumanoidRootPart, berry, 1)
+            
+            if berry:FindFirstChild("ClickDetector") then
+                fireclickdetector(berry.ClickDetector)
+            end
+            mouse1click()
+        end)
+        
+        task.wait(0.3)
+        if not berry.Parent then
+            CollectedCount = CollectedCount + 1
+            StatusItems.Text = "🍓 Berries coletadas: " .. CollectedCount
+            print("🍓 Coletou uma Berry! Total: " .. CollectedCount)
+            return true
+        end
+    end
+    
+    return false
+end
 
-criarToggle(pvpTab, "AUTO PVP", toggleAutoPvP, false)
-criarToggle(pvpTab, "ATTACK ALL", toggleAttackAll, false)
-atualizarCanvas()
+-- Loop principal do Farm
+RunService.Heartbeat:Connect(function()
+    if not FarmEnabled then return end
+    
+    local berry = FindNearestBerry()
+    
+    if berry then
+        CollectBerry(berry)
+    else
+        -- Se não tiver berry perto, explora aleatoriamente
+        if math.random(1, 100) > 97 then
+            local root = Character and Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local randomPos = root.Position + Vector3.new(
+                    math.random(-40, 40),
+                    0,
+                    math.random(-40, 40)
+                )
+                Humanoid:MoveTo(randomPos)
+                task.wait(math.random(2, 4))
+            end
+        end
+    end
+    
+    -- Atualiza contador de berries no mapa
+    StatusBerry.Text = "📡 Berries no mapa: " .. CountBerries()
+end)
 
--- // ABA UNLOCK
-local unlockTab = Instance.new("Frame")
-unlockTab.Parent = content
-unlockTab.Size = UDim2.new(1, 0, 1, 0)
-unlockTab.BackgroundTransparency = 1
-unlockTab.Visible = false
-tabContent["unlock"] = unlockTab
-
-criarBotao(unlockTab, "DESTRAVAR FORMAS", unlockAllForms)
-criarBotao(unlockTab, "DESTRAVAR TUDO", function()
-    print("Destravando tudo...")
-    unlockAllForms()
-    local remotes = game:GetService("ReplicatedStorage")
-    for _, v in ipairs(remotes:GetDescendants()) do
-        if v:IsA("RemoteEvent") and (v.Name:lower():find("unlock") or v.Name:lower():find("buy")) then
-            v:FireServer()
-            wait(0.1)
+-- =============================================
+-- DETECTA QUANDO UMA BERRY SPAWNA
+-- =============================================
+workspace.DescendantAdded:Connect(function(obj)
+    if FarmEnabled and obj:IsA("BasePart") and obj.Name == "Berry" then
+        local parent = obj.Parent
+        if parent and parent.Name == "Berries" then
+            print("🍓 Nova Berry spawnou!")
+            -- Tenta coletar imediatamente se estiver perto
+            task.wait(0.2)
+            if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                local root = Player.Character.HumanoidRootPart
+                local distance = (root.Position - obj.Position).Magnitude
+                if distance < CollectRadius then
+                    CollectBerry(obj)
+                end
+            end
         end
     end
 end)
-atualizarCanvas()
 
--- // ABA CONFIG
-local configTab = Instance.new("Frame")
-configTab.Parent = content
-configTab.Size = UDim2.new(1, 0, 1, 0)
-configTab.BackgroundTransparency = 1
-configTab.Visible = false
-tabContent["config"] = configTab
-
-criarBotao(configTab, "FECHAR MENU", function()
-    mainFrame.Visible = false
-end)
-criarBotao(configTab, "REINICIAR", function()
-    for k, v in pairs(estados) do
-        estados[k] = false
+-- =============================================
+-- PVP AUTOMÁTICO
+-- =============================================
+RunService.RenderStepped:Connect(function()
+    if not PvPEnabled then return end
+    
+    if Target and (not Target.Character or not Target.Character:FindFirstChild("Humanoid") or Target.Character.Humanoid.Health <= 0) then
+        Target = nil
     end
-    print("Funções reiniciadas")
-end)
-atualizarCanvas()
-
--- // ==========================================
--- // ATALHO K
--- // ==========================================
-
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.K then
-        mainFrame.Visible = not mainFrame.Visible
+    
+    if not Target then
+        local closest = nil
+        local closestDist = math.huge
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+                local dist = (Player.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+                if dist < closestDist and dist < 60 then
+                    closest = v
+                    closestDist = dist
+                end
+            end
+        end
+        Target = closest
+    end
+    
+    if Target and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
+        local root = Player.Character.HumanoidRootPart
+        local targetRoot = Target.Character.HumanoidRootPart
+        
+        Humanoid:MoveTo(targetRoot.Position + Vector3.new(0, 0, 5))
+        
+        if (root.Position - targetRoot.Position).Magnitude < 8 then
+            mouse1click()
+            task.wait(0.25)
+        end
     end
 end)
 
--- // ==========================================
--- // NOTIFICACAO
--- // ==========================================
+-- =============================================
+-- ANTI-KICK
+-- =============================================
+RunService.RenderStepped:Connect(function()
+    if Character and Character:FindFirstChild("HumanoidRootPart") and not FarmEnabled and not PvPEnabled then
+        local root = Character.HumanoidRootPart
+        root.Position = root.Position + Vector3.new(
+            math.sin(tick()*0.5)*0.001,
+            0,
+            math.cos(tick()*0.5)*0.001
+        )
+    end
+end)
+
+-- =============================================
+-- INICIALIZAÇÃO
+-- =============================================
+print("========================================")
+print("🍓 PROTON HUB v7 - MORPHUP")
+print("========================================")
+print("✅ Farm de BERRY (nome correto!)")
+print("✅ Movimento NATURAL (anti-cheat)")
+print("✅ Coleta por TOQUE + CLICK")
+print("📡 Raio: " .. CollectRadius .. " studs")
+print("========================================")
 
 local notif = Instance.new("TextLabel")
-notif.Parent = screenGui
-notif.Size = UDim2.new(0, 220, 0, 26)
-notif.Position = UDim2.new(0.5, -110, 0.85, 0)
-notif.BackgroundColor3 = corAtual
-notif.Text = "PROTON MENU [K]"
+notif.Size = UDim2.new(0, 400, 0, 45)
+notif.Position = UDim2.new(0.5, -200, 0.85, 0)
+notif.BackgroundColor3 = Color3.fromRGB(255, 100, 50)
+notif.BackgroundTransparency = 0.15
+notif.Text = "🍓 PROTON HUB v7 - Farm de Berries!"
 notif.TextColor3 = Color3.fromRGB(255, 255, 255)
-notif.TextScaled = true
 notif.Font = Enum.Font.GothamBold
-notif.BorderSizePixel = 0
-notif.BackgroundTransparency = 0.2
+notif.TextSize = 18
+notif.Parent = ScreenGui
 
 local notifCorner = Instance.new("UICorner")
+notifCorner.CornerRadius = UDim.new(0, 10)
 notifCorner.Parent = notif
-notifCorner.CornerRadius = UDim.new(0, 4)
 
-game:GetService("Debris"):AddItem(notif, 3)
-
-print("===== PROTON MENU - MORPHUP! =====")
-print("Pressione K para abrir/fechar")
-print("ATENCAO: Jogo em Alpha, algumas funções podem precisar de ajustes")
+task.wait(3)
+notif:Destroy()
