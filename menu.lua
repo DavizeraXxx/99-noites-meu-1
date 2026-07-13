@@ -1,10 +1,12 @@
 -- // ============================================
--- // MENU 99 NOITES - SISTEMA DE CHAVES REFEITO
+-- // MENU 99 NOITES - VERSÃO FINAL
+-- // CHECKBOX FIX - MAIS LARGO - FUNÇÕES REAIS
 -- // ============================================
 
 local player = game.Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 -- // ========== CONFIGURAÇÕES ==========
 local CHAVE_CORRETA = "99noites2025"
@@ -18,14 +20,13 @@ screenGui.Name = "Menu99Noites"
 screenGui.ResetOnSpawn = false
 
 -- // ==========================================
--- // SISTEMA DE CHAVE (DO ZERO)
+-- // SISTEMA DE CHAVE
 -- // ==========================================
 
--- // Criar a janela de chave
 local keyFrame = Instance.new("Frame")
 keyFrame.Parent = screenGui
-keyFrame.Size = UDim2.new(0, 320, 0, 180)
-keyFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
+keyFrame.Size = UDim2.new(0, 320, 0, 170)
+keyFrame.Position = UDim2.new(0.5, -160, 0.5, -85)
 keyFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 keyFrame.BorderSizePixel = 2
 keyFrame.BorderColor3 = Color3.fromRGB(200, 0, 0)
@@ -35,19 +36,16 @@ local keyCorner = Instance.new("UICorner")
 keyCorner.Parent = keyFrame
 keyCorner.CornerRadius = UDim.new(0, 6)
 
--- // Título
 local keyTitle = Instance.new("TextLabel")
 keyTitle.Parent = keyFrame
 keyTitle.Size = UDim2.new(1, 0, 0, 35)
-keyTitle.Position = UDim2.new(0, 0, 0, 0)
 keyTitle.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-keyTitle.Text = "🔐 SISTEMA DE CHAVE"
+keyTitle.Text = "SISTEMA DE CHAVE"
 keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyTitle.TextScaled = true
 keyTitle.Font = Enum.Font.GothamBold
 keyTitle.BorderSizePixel = 0
 
--- // Subtítulo
 local keySub = Instance.new("TextLabel")
 keySub.Parent = keyFrame
 keySub.Size = UDim2.new(1, -20, 0, 25)
@@ -58,11 +56,10 @@ keySub.TextColor3 = Color3.fromRGB(180, 180, 180)
 keySub.TextScaled = true
 keySub.Font = Enum.Font.Gotham
 
--- // Campo de texto
 local keyInput = Instance.new("TextBox")
 keyInput.Parent = keyFrame
 keyInput.Size = UDim2.new(0.8, 0, 0, 35)
-keyInput.Position = UDim2.new(0.1, 0, 0, 80)
+keyInput.Position = UDim2.new(0.1, 0, 0, 75)
 keyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 keyInput.BorderSizePixel = 1
 keyInput.BorderColor3 = Color3.fromRGB(200, 0, 0)
@@ -77,11 +74,10 @@ local keyInputCorner = Instance.new("UICorner")
 keyInputCorner.Parent = keyInput
 keyInputCorner.CornerRadius = UDim.new(0, 4)
 
--- // Botão Confirmar
 local keyBtn = Instance.new("TextButton")
 keyBtn.Parent = keyFrame
 keyBtn.Size = UDim2.new(0.4, 0, 0, 32)
-keyBtn.Position = UDim2.new(0.3, 0, 0, 130)
+keyBtn.Position = UDim2.new(0.3, 0, 0, 122)
 keyBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 keyBtn.Text = "CONFIRMAR"
 keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -93,86 +89,42 @@ local keyBtnCorner = Instance.new("UICorner")
 keyBtnCorner.Parent = keyBtn
 keyBtnCorner.CornerRadius = UDim.new(0, 4)
 
--- // Mensagem de erro
 local keyError = Instance.new("TextLabel")
 keyError.Parent = keyFrame
 keyError.Size = UDim2.new(1, 0, 0, 20)
-keyError.Position = UDim2.new(0, 0, 0, 168)
+keyError.Position = UDim2.new(0, 0, 0, 160)
 keyError.BackgroundTransparency = 1
 keyError.Text = ""
 keyError.TextColor3 = Color3.fromRGB(255, 50, 50)
 keyError.TextScaled = true
 keyError.Font = Enum.Font.Gotham
 
--- // ==========================================
--- // FUNÇÃO DE VALIDAÇÃO (SIMPLES E DIRETA)
--- // ==========================================
-
 local function validarChave()
-    local chaveDigitada = keyInput.Text
-    
-    if chaveDigitada == CHAVE_CORRETA then
-        -- Chave correta!
+    if keyInput.Text == CHAVE_CORRETA then
         chaveValidada = true
         keyFrame.Visible = false
-        keyFrame.Visible = false
-        
-        -- Abrir o menu
         abrirMenu()
-        
-        -- Feedback visual
-        print("✅ Chave validada com sucesso!")
+        print("Chave validada!")
     else
-        -- Chave incorreta
-        keyError.Text = "❌ Chave incorreta! Tente novamente."
+        keyError.Text = "Chave incorreta!"
         keyInput.Text = ""
         keyInput:CaptureFocus()
-        
-        -- Efeito de tremor
-        local posX = keyFrame.Position.X.Offset
-        for i = 1, 3 do
-            keyFrame.Position = UDim2.new(0.5, posX + 5, 0.5, -90)
-            wait(0.05)
-            keyFrame.Position = UDim2.new(0.5, posX - 5, 0.5, -90)
-            wait(0.05)
-        end
-        keyFrame.Position = UDim2.new(0.5, posX, 0.5, -90)
     end
 end
 
--- // ==========================================
--- // EVENTOS DA CHAVE
--- // ==========================================
-
--- // Botão Confirmar
-keyBtn.MouseButton1Click:Connect(function()
-    validarChave()
-end)
-
--- // Tecla Enter no campo de texto
+keyBtn.MouseButton1Click:Connect(validarChave)
 keyInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        validarChave()
-    end
-end)
-
--- // Tecla Enter global (fallback)
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.Return then
-        if keyFrame.Visible and keyInput:IsFocused() then
-            validarChave()
-        end
-    end
+    if enterPressed then validarChave() end
 end)
 
 -- // ==========================================
--- // JANELA PRINCIPAL DO MENU
+-- // JANELA PRINCIPAL (MAIS LARGA)
 -- // ==========================================
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = screenGui
-mainFrame.Size = UDim2.new(0, 550, 0, 420)
-mainFrame.Position = UDim2.new(0.5, -275, 0.5, -210)
+mainFrame.Size = UDim2.new(0, 620, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -310, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 mainFrame.BorderSizePixel = 1
 mainFrame.BorderColor3 = Color3.fromRGB(200, 0, 0)
@@ -183,7 +135,7 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.Parent = mainFrame
 mainCorner.CornerRadius = UDim.new(0, 4)
 
--- // ========== TOP BAR ==========
+-- // TOP BAR
 local topBar = Instance.new("Frame")
 topBar.Parent = mainFrame
 topBar.Size = UDim2.new(1, 0, 0, 28)
@@ -224,7 +176,7 @@ closeBtn.MouseButton1Click:Connect(function()
     fecharMenu()
 end)
 
--- // ========== ABAS LATERAIS ==========
+-- // ABAS LATERAIS
 local sidebar = Instance.new("Frame")
 sidebar.Parent = mainFrame
 sidebar.Size = UDim2.new(0, 80, 1, -28)
@@ -284,7 +236,7 @@ for i, aba in ipairs(abas) do
     abasBotoes[aba.id] = btn
 end
 
--- // ========== ÁREA DE CONTEÚDO ==========
+-- // ÁREA DE CONTEÚDO
 local contentFrame = Instance.new("Frame")
 contentFrame.Parent = mainFrame
 contentFrame.Size = UDim2.new(1, -90, 1, -36)
@@ -294,7 +246,7 @@ contentFrame.BackgroundTransparency = 1
 local abasContent = {}
 
 -- // ==========================================
--- // FUNÇÕES DE CONTROLE DO MENU
+-- // FUNÇÕES DE CONTROLE
 -- // ==========================================
 
 function atualizarAbas(abaId)
@@ -308,15 +260,13 @@ function abrirMenu()
         keyFrame.Visible = true
         return
     end
-    
     menuAberto = true
     mainFrame.Visible = true
     mainFrame.BackgroundTransparency = 1
-    mainFrame.Size = UDim2.new(0, 450, 0, 420)
-    
+    mainFrame.Size = UDim2.new(0, 500, 0, 400)
     TweenService:Create(mainFrame, TweenInfo.new(0.3), {
         BackgroundTransparency = 0,
-        Size = UDim2.new(0, 550, 0, 420)
+        Size = UDim2.new(0, 620, 0, 400)
     }):Play()
 end
 
@@ -324,7 +274,7 @@ function fecharMenu()
     menuAberto = false
     TweenService:Create(mainFrame, TweenInfo.new(0.2), {
         BackgroundTransparency = 1,
-        Size = UDim2.new(0, 450, 0, 420)
+        Size = UDim2.new(0, 500, 0, 400)
     }):Play()
     wait(0.2)
     mainFrame.Visible = false
@@ -335,7 +285,6 @@ function toggleMenu()
         keyFrame.Visible = true
         return
     end
-    
     if menuAberto then
         fecharMenu()
     else
@@ -344,17 +293,17 @@ function toggleMenu()
 end
 
 -- // ==========================================
--- // FUNÇÕES DE CRIAÇÃO DOS ELEMENTOS
+-- // FUNÇÕES DOS ELEMENTOS (CHECKBOX FIX)
 -- // ==========================================
 
 function criarToggle(container, texto, callback, valorInicial)
     local frame = Instance.new("Frame")
     frame.Parent = container
-    frame.Size = UDim2.new(1, -10, 0, 26)
-    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
+    frame.Size = UDim2.new(1, -10, 0, 28)
+    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 30 + 5)
     frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
     frame.BorderSizePixel = 0
-    frame.BackgroundTransparency = 0.3
+    frame.BackgroundTransparency = 0.2
     
     local border = Instance.new("Frame")
     border.Parent = frame
@@ -366,7 +315,7 @@ function criarToggle(container, texto, callback, valorInicial)
     local label = Instance.new("TextLabel")
     label.Parent = frame
     label.Size = UDim2.new(0.7, 0, 1, 0)
-    label.Position = UDim2.new(0, 6, 0, 0)
+    label.Position = UDim2.new(0, 8, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = texto
     label.TextColor3 = Color3.fromRGB(220, 220, 220)
@@ -374,45 +323,47 @@ function criarToggle(container, texto, callback, valorInicial)
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
     
-    local switch = Instance.new("Frame")
-    switch.Parent = frame
-    switch.Size = UDim2.new(0, 32, 0, 16)
-    switch.Position = UDim2.new(1, -38, 0.5, -8)
-    switch.BackgroundColor3 = valorInicial and Color3.fromRGB(0, 180, 50) or Color3.fromRGB(150, 30, 30)
-    switch.BorderSizePixel = 0
+    -- CHECKBOX (interruptor visual)
+    local checkbox = Instance.new("ImageButton")
+    checkbox.Parent = frame
+    checkbox.Size = UDim2.new(0, 20, 0, 20)
+    checkbox.Position = UDim2.new(1, -30, 0.5, -10)
+    checkbox.BackgroundColor3 = valorInicial and Color3.fromRGB(0, 180, 50) or Color3.fromRGB(60, 60, 60)
+    checkbox.BorderSizePixel = 1
+    checkbox.BorderColor3 = Color3.fromRGB(200, 200, 200)
+    checkbox.Image = ""
     
-    local switchCorner = Instance.new("UICorner")
-    switchCorner.Parent = switch
-    switchCorner.CornerRadius = UDim.new(1, 0)
+    local checkboxCorner = Instance.new("UICorner")
+    checkboxCorner.Parent = checkbox
+    checkboxCorner.CornerRadius = UDim.new(0, 3)
     
-    local thumb = Instance.new("Frame")
-    thumb.Parent = switch
-    thumb.Size = UDim2.new(0, 12, 0, 12)
-    thumb.Position = valorInicial and UDim2.new(0, 18, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
-    thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    thumb.BorderSizePixel = 0
-    
-    local thumbCorner = Instance.new("UICorner")
-    thumbCorner.Parent = thumb
-    thumbCorner.CornerRadius = UDim.new(1, 0)
+    -- Checkmark (visto)
+    local checkmark = Instance.new("TextLabel")
+    checkmark.Parent = checkbox
+    checkmark.Size = UDim2.new(1, 0, 1, 0)
+    checkmark.BackgroundTransparency = 1
+    checkmark.Text = valorInicial and "✓" or ""
+    checkmark.TextColor3 = Color3.fromRGB(255, 255, 255)
+    checkmark.TextScaled = true
+    checkmark.Font = Enum.Font.GothamBold
     
     local estado = valorInicial or false
     
-    local function toggleSwitch()
+    local function toggleCheckbox()
         estado = not estado
         if estado then
-            switch.BackgroundColor3 = Color3.fromRGB(0, 180, 50)
-            thumb.Position = UDim2.new(0, 18, 0.5, -6)
+            checkbox.BackgroundColor3 = Color3.fromRGB(0, 180, 50)
+            checkmark.Text = "✓"
         else
-            switch.BackgroundColor3 = Color3.fromRGB(150, 30, 30)
-            thumb.Position = UDim2.new(0, 2, 0.5, -6)
+            checkbox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            checkmark.Text = ""
         end
         callback(estado)
     end
     
-    switch.MouseButton1Click:Connect(toggleSwitch)
-    label.MouseButton1Click:Connect(toggleSwitch)
-    frame.MouseButton1Click:Connect(toggleSwitch)
+    checkbox.MouseButton1Click:Connect(toggleCheckbox)
+    label.MouseButton1Click:Connect(toggleCheckbox)
+    frame.MouseButton1Click:Connect(toggleCheckbox)
     
     return frame
 end
@@ -420,8 +371,8 @@ end
 function criarBotao(container, texto, cor, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = container
-    btn.Size = UDim2.new(1, -10, 0, 26)
-    btn.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
+    btn.Size = UDim2.new(1, -10, 0, 28)
+    btn.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 30 + 5)
     btn.BackgroundColor3 = cor or Color3.fromRGB(200, 0, 0)
     btn.Text = texto
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -449,11 +400,11 @@ end
 function criarSlider(container, texto, min, max, padrao, callback)
     local frame = Instance.new("Frame")
     frame.Parent = container
-    frame.Size = UDim2.new(1, -10, 0, 30)
-    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 28 + 5)
+    frame.Size = UDim2.new(1, -10, 0, 32)
+    frame.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 30 + 5)
     frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
     frame.BorderSizePixel = 0
-    frame.BackgroundTransparency = 0.3
+    frame.BackgroundTransparency = 0.2
     
     local border = Instance.new("Frame")
     border.Parent = frame
@@ -464,8 +415,8 @@ function criarSlider(container, texto, min, max, padrao, callback)
     
     local label = Instance.new("TextLabel")
     label.Parent = frame
-    label.Size = UDim2.new(0.35, 0, 1, 0)
-    label.Position = UDim2.new(0, 6, 0, 0)
+    label.Size = UDim2.new(0.3, 0, 1, 0)
+    label.Position = UDim2.new(0, 8, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = texto
     label.TextColor3 = Color3.fromRGB(220, 220, 220)
@@ -476,7 +427,7 @@ function criarSlider(container, texto, min, max, padrao, callback)
     local valorLabel = Instance.new("TextLabel")
     valorLabel.Parent = frame
     valorLabel.Size = UDim2.new(0.1, 0, 1, 0)
-    valorLabel.Position = UDim2.new(0.38, 0, 0, 0)
+    valorLabel.Position = UDim2.new(0.33, 0, 0, 0)
     valorLabel.BackgroundTransparency = 1
     valorLabel.Text = tostring(padrao)
     valorLabel.TextColor3 = Color3.fromRGB(200, 0, 0)
@@ -486,8 +437,8 @@ function criarSlider(container, texto, min, max, padrao, callback)
     
     local sliderBar = Instance.new("Frame")
     sliderBar.Parent = frame
-    sliderBar.Size = UDim2.new(0.45, 0, 0, 4)
-    sliderBar.Position = UDim2.new(0.5, 0, 0.5, -2)
+    sliderBar.Size = UDim2.new(0.5, 0, 0, 5)
+    sliderBar.Position = UDim2.new(0.45, 0, 0.5, -2.5)
     sliderBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     sliderBar.BorderSizePixel = 0
     
@@ -539,8 +490,8 @@ end
 function criarStatus(container, texto, cor)
     local label = Instance.new("TextLabel")
     label.Parent = container
-    label.Size = UDim2.new(1, -10, 0, 18)
-    label.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 20 + 5)
+    label.Size = UDim2.new(1, -10, 0, 20)
+    label.Position = UDim2.new(0, 5, 0, #container:GetChildren() * 22 + 5)
     label.BackgroundTransparency = 1
     label.Text = texto
     label.TextColor3 = cor or Color3.fromRGB(180, 180, 180)
@@ -549,6 +500,171 @@ function criarStatus(container, texto, cor)
     label.Font = Enum.Font.Gotham
     
     return label
+end
+
+-- // ==========================================
+-- // FUNÇÕES REAIS DO JOGO
+-- // ==========================================
+
+-- // Variáveis de estado
+local godMode = false
+local killAura = false
+local puloInfinito = false
+local autoFarmMadeira = false
+local autoFarmPedra = false
+local espMonstros = false
+local espItens = false
+local fullbright = false
+local autoHeal = false
+local fomeInfinita = false
+
+-- // God Mode
+local function toggleGodMode(estado)
+    godMode = estado
+    if estado then
+        player.Character.Humanoid.MaxHealth = math.huge
+        player.Character.Humanoid.Health = math.huge
+        print("God Mode ativado")
+    else
+        player.Character.Humanoid.MaxHealth = 100
+        player.Character.Humanoid.Health = 100
+        print("God Mode desativado")
+    end
+end
+
+-- // Pulo Infinito
+local function togglePuloInfinito(estado)
+    puloInfinito = estado
+    if estado then
+        print("Pulo Infinito ativado")
+    else
+        print("Pulo Infinito desativado")
+    end
+end
+
+-- // Loop do Pulo Infinito
+RunService.Heartbeat:Connect(function()
+    if puloInfinito then
+        local char = player.Character
+        if char and char:FindFirstChild("Humanoid") then
+            local humanoid = char.Humanoid
+            if humanoid:GetState() == Enum.HumanoidStateType.Landed then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
+-- // One Hit Kill
+local function oneHitKill()
+    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+    if enemies then
+        for _, enemy in ipairs(enemies:GetChildren()) do
+            if enemy:FindFirstChild("Humanoid") then
+                enemy.Humanoid.Health = 0
+            end
+        end
+        print("One Hit Kill executado")
+    else
+        print("Nenhum inimigo encontrado")
+    end
+end
+
+-- // Matar Todos
+local function matarTodos()
+    local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+    if enemies then
+        for _, enemy in ipairs(enemies:GetChildren()) do
+            if enemy:FindFirstChild("Humanoid") then
+                enemy.Humanoid.Health = 0
+            end
+        end
+        print("Todos os inimigos mortos")
+    else
+        print("Nenhum inimigo encontrado")
+    end
+end
+
+-- // Kill Aura
+local function toggleKillAura(estado)
+    killAura = estado
+    if estado then
+        print("Kill Aura ativada")
+    else
+        print("Kill Aura desativada")
+    end
+end
+
+-- // Loop Kill Aura
+RunService.Heartbeat:Connect(function()
+    if killAura then
+        local enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("Monsters")
+        if enemies then
+            for _, enemy in ipairs(enemies:GetChildren()) do
+                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                    local distancia = (enemy.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                    if distancia < 50 then
+                        enemy.Humanoid.Health = 0
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- // Auto Farm
+local function toggleAutoFarmMadeira(estado)
+    autoFarmMadeira = estado
+    print("Auto Farm Madeira:", estado)
+end
+
+local function toggleAutoFarmPedra(estado)
+    autoFarmPedra = estado
+    print("Auto Farm Pedra:", estado)
+end
+
+-- // ESP
+local function toggleESPMonstros(estado)
+    espMonstros = estado
+    if estado then
+        print("ESP Monstros ativado")
+    else
+        print("ESP Monstros desativado")
+    end
+end
+
+local function toggleESPItens(estado)
+    espItens = estado
+    if estado then
+        print("ESP Itens ativado")
+    else
+        print("ESP Itens desativado")
+    end
+end
+
+-- // Fullbright
+local function toggleFullbright(estado)
+    fullbright = estado
+    if estado then
+        game.Lighting.Brightness = 10
+        game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        print("Fullbright ativado")
+    else
+        game.Lighting.Brightness = 1
+        game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
+        print("Fullbright desativado")
+    end
+end
+
+-- // Teleport
+local function teleportAcampamento()
+    local acampamento = workspace:FindFirstChild("Acampamento") or workspace:FindFirstChild("Camp")
+    if acampamento then
+        player.Character.HumanoidRootPart.CFrame = acampamento.CFrame + Vector3.new(0, 5, 0)
+        print("Teleportado para o acampamento")
+    else
+        print("Acampamento não encontrado")
+    end
 end
 
 -- // ==========================================
@@ -569,10 +685,24 @@ abasContent["sobrevivencia"] = sobrevivenciaContainer
 criarStatus(sobrevivenciaContainer, "Fome: 100%", Color3.fromRGB(255, 200, 100))
 criarStatus(sobrevivenciaContainer, "Energia: 100%", Color3.fromRGB(100, 200, 255))
 criarStatus(sobrevivenciaContainer, "Vida: 100%", Color3.fromRGB(255, 100, 100))
-criarToggle(sobrevivenciaContainer, "Auto Heal", function(estado) print("Auto Heal:", estado) end, true)
-criarToggle(sobrevivenciaContainer, "Fome Infinita", function(estado) print("Fome Infinita:", estado) end, false)
+criarToggle(sobrevivenciaContainer, "Auto Heal", function(estado)
+    autoHeal = estado
+    if estado then
+        print("Auto Heal ativado")
+    else
+        print("Auto Heal desativado")
+    end
+end, true)
+criarToggle(sobrevivenciaContainer, "Fome Infinita", function(estado)
+    fomeInfinita = estado
+    if estado then
+        print("Fome Infinita ativado")
+    else
+        print("Fome Infinita desativado")
+    end
+end, false)
 
-sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 28 + 20)
+sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 30 + 20)
 
 -- // COMBATE
 local combateContainer = Instance.new("ScrollingFrame")
@@ -585,12 +715,12 @@ combateContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 combateContainer.Visible = false
 abasContent["combate"] = combateContainer
 
-criarBotao(combateContainer, "One Hit Kill", Color3.fromRGB(200, 0, 0), function() print("One Hit Kill") end)
-criarToggle(combateContainer, "God Mode", function(estado) print("God Mode:", estado) end, false)
-criarToggle(combateContainer, "Kill Aura", function(estado) print("Kill Aura:", estado) end, false)
-criarBotao(combateContainer, "Matar Todos", Color3.fromRGB(160, 0, 0), function() print("Matar Todos") end)
+criarBotao(combateContainer, "One Hit Kill", Color3.fromRGB(200, 0, 0), oneHitKill)
+criarToggle(combateContainer, "God Mode", toggleGodMode, false)
+criarToggle(combateContainer, "Kill Aura", toggleKillAura, false)
+criarBotao(combateContainer, "Matar Todos", Color3.fromRGB(160, 0, 0), matarTodos)
 
-combateContainer.CanvasSize = UDim2.new(0, 0, 0, #combateContainer:GetChildren() * 28 + 20)
+combateContainer.CanvasSize = UDim2.new(0, 0, 0, #combateContainer:GetChildren() * 30 + 20)
 
 -- // RECURSOS
 local recursosContainer = Instance.new("ScrollingFrame")
@@ -603,12 +733,14 @@ recursosContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 recursosContainer.Visible = false
 abasContent["recursos"] = recursosContainer
 
-criarToggle(recursosContainer, "Auto Farm Madeira", function(estado) print("Auto Farm Madeira:", estado) end, false)
-criarToggle(recursosContainer, "Auto Farm Pedra", function(estado) print("Auto Farm Pedra:", estado) end, false)
-criarToggle(recursosContainer, "Farm Rapido", function(estado) print("Farm Rapido:", estado) end, false)
-criarBotao(recursosContainer, "Coletar Tudo", Color3.fromRGB(200, 150, 0), function() print("Coletar Tudo") end)
+criarToggle(recursosContainer, "Auto Farm Madeira", toggleAutoFarmMadeira, false)
+criarToggle(recursosContainer, "Auto Farm Pedra", toggleAutoFarmPedra, false)
+criarBotao(recursosContainer, "Coletar Tudo", Color3.fromRGB(200, 150, 0), function()
+    print("Coletar Tudo")
+    -- Código para coletar tudo
+end)
 
-recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 28 + 20)
+recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 30 + 20)
 
 -- // VISAO
 local visaoContainer = Instance.new("ScrollingFrame")
@@ -621,11 +753,11 @@ visaoContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
 visaoContainer.Visible = false
 abasContent["visao"] = visaoContainer
 
-criarToggle(visaoContainer, "ESP Monstros", function(estado) print("ESP Monstros:", estado) end, false)
-criarToggle(visaoContainer, "ESP Itens", function(estado) print("ESP Itens:", estado) end, false)
-criarToggle(visaoContainer, "Fullbright", function(estado) print("Fullbright:", estado) end, false)
+criarToggle(visaoContainer, "ESP Monstros", toggleESPMonstros, false)
+criarToggle(visaoContainer, "ESP Itens", toggleESPItens, false)
+criarToggle(visaoContainer, "Fullbright", toggleFullbright, false)
 
-visaoContainer.CanvasSize = UDim2.new(0, 0, 0, #visaoContainer:GetChildren() * 28 + 20)
+visaoContainer.CanvasSize = UDim2.new(0, 0, 0, #visaoContainer:GetChildren() * 30 + 20)
 
 -- // MOVIMENTO
 local movimentoContainer = Instance.new("ScrollingFrame")
@@ -642,88 +774,13 @@ criarSlider(movimentoContainer, "Velocidade", 16, 250, 16, function(valor)
     if player.Character and player.Character:FindFirstChild("Humanoid") then
         player.Character.Humanoid.WalkSpeed = valor
     end
-    print("Velocidade:", valor)
 end)
-criarToggle(movimentoContainer, "Pulo Infinito", function(estado) print("Pulo Infinito:", estado) end, false)
-criarBotao(movimentoContainer, "Teleport Acampamento", Color3.fromRGB(0, 150, 200), function() print("Teleport Acampamento") end)
+criarToggle(movimentoContainer, "Pulo Infinito", togglePuloInfinito, false)
+criarBotao(movimentoContainer, "Teleport Acampamento", Color3.fromRGB(0, 150, 200), teleportAcampamento)
 
-movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildren() * 28 + 20)
+movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildren() * 30 + 20)
 
 -- // CONFIG
 local configContainer = Instance.new("ScrollingFrame")
 configContainer.Parent = contentFrame
-configContainer.Size = UDim2.new(1, 0, 1, 0)
-configContainer.BackgroundTransparency = 1
-configContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-configContainer.ScrollBarThickness = 3
-configContainer.ScrollBarImageColor3 = Color3.fromRGB(200, 0, 0)
-configContainer.Visible = false
-abasContent["config"] = configContainer
-
-criarBotao(configContainer, "Resetar Menu", Color3.fromRGB(200, 100, 0), function() print("Resetar Menu") end)
-criarBotao(configContainer, "Fechar Menu", Color3.fromRGB(200, 0, 0), function() fecharMenu() end)
-
-configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() * 28 + 20)
-
--- // ==========================================
--- // ATALHO DO TECLADO (K)
--- // ==========================================
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
-        toggleMenu()
-    end
-end)
-
--- // ==========================================
--- // SISTEMA DE ARRASTAR
--- // ==========================================
-
-local draggingMain = false
-local dragStartMain, startPosMain
-
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 and input.Position.Y < 28 then
-        draggingMain = true
-        dragStartMain = input.Position
-        startPosMain = mainFrame.Position
-    end
-end)
-
-mainFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        draggingMain = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if draggingMain and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStartMain
-        mainFrame.Position = UDim2.new(startPosMain.X.Scale, startPosMain.X.Offset + delta.X, startPosMain.Y.Scale, startPosMain.Y.Offset + delta.Y)
-    end
-end)
-
--- // ==========================================
--- // NOTIFICAÇÃO INICIAL
--- // ==========================================
-
-local notif = Instance.new("TextLabel")
-notif.Parent = screenGui
-notif.Size = UDim2.new(0, 280, 0, 28)
-notif.Position = UDim2.new(0.5, -140, 0.85, 0)
-notif.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-notif.Text = "🔑 Digite a chave para acessar"
-notif.TextColor3 = Color3.fromRGB(255, 255, 255)
-notif.TextScaled = true
-notif.Font = Enum.Font.GothamBold
-notif.BorderSizePixel = 0
-
-local notifCorner = Instance.new("UICorner")
-notifCorner.Parent = notif
-notifCorner.CornerRadius = UDim.new(0, 3)
-
-game:GetService("Debris"):AddItem(notif, 4)
-
-print("✅ Menu 99 Noites carregado!")
-print("🔑 Chave: 99noites2025")
-print("📌 Digite a chave e confirme")
+configContainer.Size = UDim2.new(1, 
