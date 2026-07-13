@@ -1,6 +1,5 @@
 -- // ============================================
--- // MENU 99 NOITES - VERSÃO OTIMIZADA
--- // MAIS LARGO - MAIS BAIXO - SEM EMOJIS
+-- // MENU 99 NOITES - VERSÃO CORRIGIDA
 -- // ============================================
 
 local player = game.Players.LocalPlayer
@@ -101,21 +100,6 @@ keyError.TextScaled = true
 keyError.Font = Enum.Font.Gotham
 keyError.TextSize = 10
 
-keyBtn.MouseButton1Click:Connect(function()
-    if keyInput.Text == chaveCorreta then
-        chaveValidada = true
-        keyFrame.Visible = false
-        toggleMenu()
-    else
-        keyError.Text = "Chave incorreta!"
-        keyInput.Text = ""
-    end
-end)
-
-keyInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then keyBtn.MouseButton1Click:Fire() end
-end)
-
 -- // ========== JANELA PRINCIPAL ==========
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = screenGui
@@ -170,10 +154,6 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = closeBtn
 closeCorner.CornerRadius = UDim.new(0, 3)
 
-closeBtn.MouseButton1Click:Connect(function()
-    toggleMenu()
-end)
-
 -- // ========== ABAS LATERAIS ==========
 local sidebar = Instance.new("Frame")
 sidebar.Parent = mainFrame
@@ -182,11 +162,6 @@ sidebar.Position = UDim2.new(0, 0, 0, 28)
 sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 sidebar.BorderSizePixel = 0
 
-local sidebarCorner = Instance.new("UICorner")
-sidebarCorner.Parent = sidebar
-sidebarCorner.CornerRadius = UDim.new(0, 0)
-
--- // Lista de abas (SEM EMOJIS)
 local abas = {
     {id = "sobrevivencia", nome = "SOBREV"},
     {id = "combate", nome = "COMBATE"},
@@ -199,7 +174,6 @@ local abas = {
 local abasBotoes = {}
 local abaAtual = "sobrevivencia"
 
--- // Criar botões das abas
 for i, aba in ipairs(abas) do
     local btn = Instance.new("TextButton")
     btn.Parent = sidebar
@@ -257,9 +231,35 @@ function atualizarAbas(abaId)
     end
 end
 
+-- // ========== FUNÇÃO TOGGLE MENU (DEFINIDA ANTES DE SER USADA) ==========
+local aberto = false
+
+function toggleMenu()
+    if not chaveValidada then
+        keyFrame.Visible = true
+        return
+    end
+    aberto = not aberto
+    mainFrame.Visible = aberto
+    if aberto then
+        mainFrame.BackgroundTransparency = 1
+        mainFrame.Size = UDim2.new(0, 450, 0, 420)
+        TweenService:Create(mainFrame, TweenInfo.new(0.25), {
+            BackgroundTransparency = 0,
+            Size = UDim2.new(0, 550, 0, 420)
+        }):Play()
+    else
+        TweenService:Create(mainFrame, TweenInfo.new(0.15), {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 450, 0, 420)
+        }):Play()
+        wait(0.15)
+        mainFrame.Visible = false
+    end
+end
+
 -- // ========== FUNÇÕES PARA CRIAR ELEMENTOS ==========
 
--- // Criar Toggle (INTERRUPTOR ESTILO CHECKBOX)
 function criarToggle(container, texto, callback, valorInicial)
     local frame = Instance.new("Frame")
     frame.Parent = container
@@ -288,7 +288,6 @@ function criarToggle(container, texto, callback, valorInicial)
     label.Font = Enum.Font.Gotham
     label.TextSize = 10
     
-    -- INTERRUPTOR (checkbox slider)
     local switch = Instance.new("Frame")
     switch.Parent = frame
     switch.Size = UDim2.new(0, 32, 0, 16)
@@ -313,7 +312,6 @@ function criarToggle(container, texto, callback, valorInicial)
     
     local estado = valorInicial or false
     
-    -- Clique no switch ou no frame todo
     local function toggleSwitch()
         estado = not estado
         if estado then
@@ -333,7 +331,6 @@ function criarToggle(container, texto, callback, valorInicial)
     return frame
 end
 
--- // Criar Botão
 function criarBotao(container, texto, cor, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = container
@@ -364,7 +361,6 @@ function criarBotao(container, texto, cor, callback)
     return btn
 end
 
--- // Criar Slider
 function criarSlider(container, texto, min, max, padrao, callback)
     local frame = Instance.new("Frame")
     frame.Parent = container
@@ -457,7 +453,6 @@ function criarSlider(container, texto, min, max, padrao, callback)
     return frame
 end
 
--- // Criar Status (informação)
 function criarStatus(container, texto, cor)
     local label = Instance.new("TextLabel")
     label.Parent = container
@@ -476,7 +471,7 @@ end
 
 -- // ========== CRIAR ABAS ==========
 
--- // ABA SOBREVIVENCIA
+-- // SOBREVIVENCIA
 local sobrevivenciaContainer = Instance.new("ScrollingFrame")
 sobrevivenciaContainer.Parent = contentFrame
 sobrevivenciaContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -499,7 +494,7 @@ end, false)
 
 sobrevivenciaContainer.CanvasSize = UDim2.new(0, 0, 0, #sobrevivenciaContainer:GetChildren() * 28 + 20)
 
--- // ABA COMBATE
+-- // COMBATE
 local combateContainer = Instance.new("ScrollingFrame")
 combateContainer.Parent = contentFrame
 combateContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -525,7 +520,7 @@ end)
 
 combateContainer.CanvasSize = UDim2.new(0, 0, 0, #combateContainer:GetChildren() * 28 + 20)
 
--- // ABA RECURSOS
+-- // RECURSOS
 local recursosContainer = Instance.new("ScrollingFrame")
 recursosContainer.Parent = contentFrame
 recursosContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -551,7 +546,7 @@ end)
 
 recursosContainer.CanvasSize = UDim2.new(0, 0, 0, #recursosContainer:GetChildren() * 28 + 20)
 
--- // ABA VISAO
+-- // VISAO
 local visaoContainer = Instance.new("ScrollingFrame")
 visaoContainer.Parent = contentFrame
 visaoContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -574,7 +569,7 @@ end, false)
 
 visaoContainer.CanvasSize = UDim2.new(0, 0, 0, #visaoContainer:GetChildren() * 28 + 20)
 
--- // ABA MOVIMENTO
+-- // MOVIMENTO
 local movimentoContainer = Instance.new("ScrollingFrame")
 movimentoContainer.Parent = contentFrame
 movimentoContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -598,7 +593,7 @@ end)
 
 movimentoContainer.CanvasSize = UDim2.new(0, 0, 0, #movimentoContainer:GetChildren() * 28 + 20)
 
--- // ABA CONFIG
+-- // CONFIG
 local configContainer = Instance.new("ScrollingFrame")
 configContainer.Parent = contentFrame
 configContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -618,32 +613,21 @@ end)
 
 configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() * 28 + 20)
 
--- // ========== FUNÇÃO ABRIR/FECHAR ==========
-local aberto = false
-
-function toggleMenu()
-    if not chaveValidada then
-        keyFrame.Visible = true
-        return
-    end
-    aberto = not aberto
-    mainFrame.Visible = aberto
-    if aberto then
-        mainFrame.BackgroundTransparency = 1
-        mainFrame.Size = UDim2.new(0, 450, 0, 420)
-        TweenService:Create(mainFrame, TweenInfo.new(0.25), {
-            BackgroundTransparency = 0,
-            Size = UDim2.new(0, 550, 0, 420)
-        }):Play()
+-- // ========== VALIDAÇÃO DA CHAVE (DEPOIS DE DEFINIR toggleMenu) ==========
+keyBtn.MouseButton1Click:Connect(function()
+    if keyInput.Text == chaveCorreta then
+        chaveValidada = true
+        keyFrame.Visible = false
+        toggleMenu()
     else
-        TweenService:Create(mainFrame, TweenInfo.new(0.15), {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, 450, 0, 420)
-        }):Play()
-        wait(0.15)
-        mainFrame.Visible = false
+        keyError.Text = "Chave incorreta!"
+        keyInput.Text = ""
     end
-end
+end)
+
+keyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then keyBtn.MouseButton1Click:Fire() end
+end)
 
 -- // ========== ATALHO TECLA K ==========
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -654,6 +638,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             toggleMenu()
         end
     end
+end)
+
+-- // ========== FECHAR MENU (BOTÃO X) ==========
+closeBtn.MouseButton1Click:Connect(function()
+    toggleMenu()
 end)
 
 -- // ========== SISTEMA DE ARRASTAR ==========
