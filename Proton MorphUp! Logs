@@ -1,0 +1,446 @@
+-- Proton Hub v6 - MorphUp (Detector Inteligente de Carnes)
+-- Registra TUDO quando você pega uma carne manualmente
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+-- Variáveis
+local FarmEnabled = false
+local PvPEnabled = false
+local Target = nil
+local DetectedItems = {}
+local CollectRadius = 80
+local CollectedCount = 0
+
+-- =============================================
+-- SISTEMA DE DETECÇÃO INTELIGENTE
+-- =============================================
+
+-- Lista para salvar os logs
+local Logs = {}
+local LogFile = "" -- Vai acumular os logs
+
+-- Função para registrar log
+local function AddLog(message)
+    local timestamp = os.date("%H:%M:%S")
+    local logEntry = string.format("[%s] %s", timestamp, message)
+    table.insert(Logs, logEntry)
+    LogFile = LogFile .. logEntry .. "\n"
+    print(logEntry)
+end
+
+-- DETECTA QUANDO O PLAYER GANHA XP (qualquer aumento)
+local function DetectXP()
+    local leaderstats = Player:FindFirstChild("leaderstats")
+    if not leaderstats then return end
+    
+    -- Procura por qualquer stat que possa ser XP
+    for _, stat in pairs(leaderstats:GetChildren()) do
+        if stat:IsA("NumberValue") or stat:IsA("IntValue") then
+            local oldValue = stat.Value
+            
+            stat:GetPropertyChangedSignal("Value"):Connect(function()
+                local newValue = stat.Value
+                if newValue > oldValue then
+                    AddLog(string.format("🔍 XP DETECTADO! Stat: %s | Antes: %d | Depois: %d", 
+                        stat.Name, oldValue, newValue))
+                    oldValue = newValue
+                    
+                    -- Agora vamos ver o que está por perto
+                    ScanNearbyObjects()
+                end
+            end)
+        end
+    end
+end
+
+-- ESCANEIA OBJETOS PRÓXIMOS (para descobrir o que é a carne)
+local function ScanNearbyObjects()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    
+    local root = character.HumanoidRootPart
+    local radius = 15 -- Raio de busca após ganhar XP
+    
+    AddLog("🔍 Escaneando objetos próximos...")
+    
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Parent ~= character then
+            local distance = (root.Position - obj.Position).Magnitude
+            if distance < radius then
+                local info = string.format(
+                    "📦 Objeto: '%s' | Classe: %s | Ancorado: %s | Tamanho: %.2f | Posição: %s | Distância: %.2f",
+                    obj.Name,
+                    obj.ClassName,
+                    tostring(obj.Anchored),
+                    obj.Size.Magnitude,
+                    tostring(obj.Position),
+                    distance
+                )
+                AddLog(info)
+                
+                -- Verifica se tem ClickDetector
+                if obj:FindFirstChild("ClickDetector") then
+                    AddLog("   ✅ TEM CLICKDETECTOR!")
+                end
+                
+                -- Verifica se tem TouchTransmitter
+                if obj:FindFirstChild("TouchTransmitter") then
+                    AddLog("   ✅ TEM TOUCHTRANSMITTER!")
+                end
+                
+                -- Verifica outros filhos importantes
+                for _, child in pairs(obj:GetChildren()) do
+                    if child:IsA("Script") or child:IsA("LocalScript") or child:IsA("ModuleScript") then
+                        AddLog(string.format("   📜 Tem script: %s", child.Name))
+                    end
+                    if child:IsA("NumberValue") or child:IsA("StringValue") or child:IsA("BoolValue") then
+                        AddLog(string.format("   💾 Tem Value: %s = %s", child.Name, tostring(child.Value)))
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- DETECTA INTERAÇÃO MANUAL (quando você clica em algo)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mouse = Player:GetMouse()
+        local target = mouse.Target
+        
+        if target then
+            AddLog(string.format("🖱️ CLIQUEU EM: '%s' (%s) | Posição: %s", 
+                target.Name, target.ClassName, tostring(target.Position)))
+            
+            -- Espera um pouco e vê se ganhou XP
+            task.wait(0.5)
+            
+            -- Pega o objeto pai (pode ser um grupo)
+            local parent = target.Parent
+            if parent then
+                AddLog(string.format("   📁 Pai: '%s' (%s)", parent.Name, parent.ClassName))
+                
+                -- Verifica se o pai tem algo relevante
+                for _, child in pairs(parent:GetChildren()) do
+                    if child:IsA("ClickDetector") then
+                        AddLog("   ✅ PAI TEM CLICKDETECTOR!")
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- DETECTA QUANDO VOCÊ TOCA EM ALGO
+Character.HumanoidRootPart.Touched:Connect(function(hit)
+    if hit and hit:IsA("BasePart") then
+        AddLog(string.format("👣 TOCOU EM: '%s' (%s) | Ancorado: %s", 
+            hit.Name, hit.ClassName, tostring(hit.Anchored)))
+        
+        -- Verifica o pai
+        if hit.Parent then
+            AddLog(string.format("   📁 Pai: '%s' (%s)", hit.Parent.Name, hit.Parent.ClassName))
+        end
+        
+        -- Salva o objeto para análise
+        if not DetectedItems[hit] then
+            DetectedItems[hit] = {
+                Name = hit.Name,
+                Class = hit.ClassName,
+                Parent = hit.Parent and hit.Parent.Name,
+                Anchored = hit.Anchored,
+                Size = hit.Size
+            }
+        end
+    end
+end)
+
+-- DETECTA QUANDO OBJETOS SPAWNAM
+workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("BasePart") and obj.Parent ~= Character then
+        AddLog(string.format("✨ NOVO OBJETO SPAWNOU: '%s' (%s) | Posição: %s", 
+            obj.Name, obj.ClassName, tostring(obj.Position)))
+        
+        if obj.Parent then
+            AddLog(string.format("   📁 Pai: '%s' (%s)", obj.Parent.Name, obj.Parent.ClassName))
+        end
+        
+        -- Verifica se parece uma carne (pequeno, não ancorado)
+        if not obj.Anchored and obj.Size.Magnitude < 5 then
+            AddLog("   🍖 PARECE SER UMA CARNE!")
+            
+            -- Tenta pegar informações adicionais
+            task.wait(0.5)
+            if obj.Parent then
+                for _, child in pairs(obj:GetChildren()) do
+                    if child:IsA("ClickDetector") then
+                        AddLog("   ✅ TEM CLICKDETECTOR!")
+                    end
+                    if child:IsA("TouchTransmitter") then
+                        AddLog("   ✅ TEM TOUCHTRANSMITTER!")
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- DETECTA QUANDO OBJETOS SÃO REMOVIDOS (coletados)
+workspace.DescendantRemoving:Connect(function(obj)
+    if obj:IsA("BasePart") and obj.Parent ~= Character then
+        AddLog(string.format("🗑️ OBJETO REMOVIDO: '%s' (%s)", obj.Name, obj.ClassName))
+        
+        if DetectedItems[obj] then
+            AddLog("   ✅ ESTE OBJETO FOI TOCADO ANTES!")
+            DetectedItems[obj] = nil
+        end
+    end
+end)
+
+-- =============================================
+-- FUNÇÃO PARA VER LOGS NO CONSOLE
+-- =============================================
+local function ShowLogs()
+    print("========== LOGS DETECTADOS ==========")
+    for i, log in ipairs(Logs) do
+        print(log)
+    end
+    print("=====================================")
+    print("Total de logs: " .. #Logs)
+end
+
+-- Comando no console: /logs
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Proton Hub v6",
+    Text = "Digite 'showlogs()' no console para ver os logs!",
+    Duration = 5
+})
+
+-- Exporta função para o console
+_G.showlogs = ShowLogs
+_G.clear_logs = function() 
+    Logs = {} 
+    print("🧹 Logs limpos!") 
+end
+
+print("📊 Digite 'showlogs()' no console para ver todos os logs coletados!")
+print("📊 Digite 'clear_logs()' para limpar os logs!")
+
+-- =============================================
+-- INTERFACE (Menu Simplificado)
+-- =============================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ProtonHub"
+ScreenGui.Parent = Player.PlayerGui
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 420, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -170)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 16)
+Corner.Parent = MainFrame
+
+local Glass = Instance.new("Frame")
+Glass.Size = UDim2.new(1, 0, 1, 0)
+Glass.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Glass.BackgroundTransparency = 0.93
+Glass.BorderSizePixel = 0
+Glass.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "🔍 PROTON HUB v6"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+Title.TextStrokeTransparency = 0.3
+Title.Parent = MainFrame
+
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, 0, 0, 20)
+SubTitle.Position = UDim2.new(0, 0, 0, 45)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "Detector Inteligente de Carnes"
+SubTitle.TextColor3 = Color3.fromRGB(180, 180, 200)
+SubTitle.Font = Enum.Font.Gotham
+SubTitle.TextSize = 14
+SubTitle.Parent = MainFrame
+
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(0.9, 0, 0, 2)
+Line.Position = UDim2.new(0.05, 0, 0, 70)
+Line.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+Line.BackgroundTransparency = 0.3
+Line.BorderSizePixel = 0
+Line.Parent = MainFrame
+
+-- Status
+local StatusFarm = Instance.new("TextLabel")
+StatusFarm.Size = UDim2.new(1, 0, 0, 25)
+StatusFarm.Position = UDim2.new(0.03, 0, 0, 85)
+StatusFarm.BackgroundTransparency = 1
+StatusFarm.Text = "🔍 Detector: ATIVO (pegar carnes manualmente)"
+StatusFarm.TextColor3 = Color3.fromRGB(100, 255, 100)
+StatusFarm.Font = Enum.Font.GothamBold
+StatusFarm.TextSize = 14
+StatusFarm.TextXAlignment = Enum.TextXAlignment.Left
+StatusFarm.Parent = MainFrame
+
+local StatusLogs = Instance.new("TextLabel")
+StatusLogs.Size = UDim2.new(1, 0, 0, 20)
+StatusLogs.Position = UDim2.new(0.03, 0, 0, 110)
+StatusLogs.BackgroundTransparency = 1
+StatusLogs.Text = "📊 Logs registrados: 0"
+StatusLogs.TextColor3 = Color3.fromRGB(200, 200, 255)
+StatusLogs.Font = Enum.Font.Gotham
+StatusLogs.TextSize = 13
+StatusLogs.TextXAlignment = Enum.TextXAlignment.Left
+StatusLogs.Parent = MainFrame
+
+-- =============================================
+-- BOTÕES
+-- =============================================
+local function CreateButton(text, yPos, color, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.85, 0, 0, 40)
+    btn.Position = UDim2.new(0.075, 0, 0, yPos)
+    btn.BackgroundColor3 = color
+    btn.BackgroundTransparency = 0.2
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 15
+    btn.BorderSizePixel = 0
+    btn.Parent = MainFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 10)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(callback)
+    
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundTransparency = 0.05
+    end)
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundTransparency = 0.2
+    end)
+    
+    return btn
+end
+
+-- Botão Ver Logs
+CreateButton("📊 Ver Logs no Console", 150, Color3.fromRGB(0, 150, 200), function()
+    ShowLogs()
+    print("✅ Logs exibidos no console (F9)!")
+end)
+
+-- Botão Exportar Logs
+CreateButton("💾 Exportar Logs (Copia)", 200, Color3.fromRGB(200, 150, 0), function()
+    if #Logs > 0 then
+        local text = "========== PROTON HUB LOGS ==========\n"
+        for i, log in ipairs(Logs) do
+            text = text .. log .. "\n"
+        end
+        text = text .. "========================================"
+        
+        setclipboard(text)
+        print("📋 Logs copiados para área de transferência!")
+        print("Cole em um bloco de notas e me envie!")
+    else
+        print("❌ Nenhum log registrado ainda!")
+    end
+end)
+
+-- Botão Limpar Logs
+CreateButton("🧹 Limpar Logs", 250, Color3.fromRGB(200, 50, 50), function()
+    Logs = {}
+    StatusLogs.Text = "📊 Logs registrados: 0"
+    print("🧹 Logs limpos!")
+end)
+
+-- Botão Fechar
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+CloseBtn.Position = UDim2.new(1, -42, 0, 5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseBtn.BackgroundTransparency = 0.3
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 20
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(1, 0)
+CloseCorner.Parent = CloseBtn
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- =============================================
+-- ATUALIZA CONTADOR DE LOGS
+-- =============================================
+local function UpdateLogCounter()
+    StatusLogs.Text = string.format("📊 Logs registrados: %d", #Logs)
+end
+
+-- Atualiza a cada 3 segundos
+task.spawn(function()
+    while true do
+        UpdateLogCounter()
+        task.wait(3)
+    end
+end)
+
+-- =============================================
+-- INICIALIZA O DETECTOR
+-- =============================================
+DetectXP()
+
+print("========================================")
+print("🔍 PROTON HUB v6 - DETECTOR INTELIGENTE")
+print("========================================")
+print("✅ Aguarde!")
+print("✅ PEGUE UMA CARNE MANUALMENTE")
+print("✅ O sistema vai detectar e registrar TUDO")
+print("✅ Depois clique em 'Ver Logs' ou 'Exportar Logs'")
+print("========================================")
+
+-- Notificação
+local notif = Instance.new("TextLabel")
+notif.Size = UDim2.new(0, 450, 0, 50)
+notif.Position = UDim2.new(0.5, -225, 0.8, 0)
+notif.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+notif.BackgroundTransparency = 0.2
+notif.Text = "🔍 PEGUE UMA CARNE MANUALMENTE AGORA!"
+notif.TextColor3 = Color3.fromRGB(255, 255, 255)
+notif.Font = Enum.Font.GothamBold
+notif.TextSize = 18
+notif.Parent = ScreenGui
+
+local notifCorner = Instance.new("UICorner")
+notifCorner.CornerRadius = UDim.new(0, 10)
+notifCorner.Parent = notif
+
+task.wait(5)
+notif:Destroy()
