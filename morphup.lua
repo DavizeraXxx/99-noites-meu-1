@@ -1,6 +1,6 @@
 -- // ============================================
 -- // PROTON MENU - MORPHUP! EDITION
--- // AUTO FARM XP - DESTRAVAR FORMAS - PVP - ATTACK ALL
+-- // CORRIGIDO - ABAS FUNCIONANDO
 -- // ============================================
 
 local player = game.Players.LocalPlayer
@@ -29,7 +29,7 @@ local estados = {
 }
 
 -- // ==========================================
--- // FUNÇÕES DO JOGO (ADAPTÁVEIS)
+-- // FUNÇÕES DO JOGO (MELHORADAS)
 -- // ==========================================
 
 -- // AUTO FARM XP - Coleta XP automático
@@ -56,72 +56,78 @@ function toggleAttackAll()
     print("Attack All:", estados.attackAll and "ON" or "OFF")
 end
 
--- // DESTRAVAR TODAS AS FORMAS
+-- // DESTRAVAR TODAS AS FORMAS (MELHORADO)
 function unlockAllForms()
     print("Tentando destravar todas as formas...")
-    -- Tenta encontrar o sistema de formas
-    local morphSystem = player:FindFirstChild("MorphSystem") or 
-                        player.PlayerGui:FindFirstChild("MorphSystem") or
-                        Workspace:FindFirstChild("MorphSystem")
     
-    if morphSystem then
-        print("Sistema de formas encontrado!")
-        -- Código para destravar formas (depende da estrutura do jogo)
-        -- Como o jogo está em Alpha, isso pode variar
-    else
-        print("Sistema de formas não encontrado. Tentando alternativa...")
-        -- Tentativa alternativa: procurar por botões de desbloqueio na GUI
-        local gui = player.PlayerGui:FindFirstChild("MorphGUI") or player.PlayerGui:FindFirstChild("MainGUI")
-        if gui then
-            print("GUI encontrada, tentando destravar formas...")
-            for _, child in ipairs(gui:GetDescendants()) do
-                if child:IsA("TextButton") and (child.Text:lower():find("unlock") or child.Text:lower():find("desbloquear")) then
-                    child:Click()
-                    wait(0.1)
-                end
+    -- 1. Tentar via ReplicatedStorage (remotes)
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("UnlockAll")
+    if remote then
+        remote:FireServer()
+        print("Remote UnlockAll acionado!")
+        return
+    end
+    
+    -- 2. Tentar via GUI (botões de compra)
+    local gui = player.PlayerGui:FindFirstChild("MorphGUI") or player.PlayerGui:FindFirstChild("MainGUI")
+    if gui then
+        for _, v in ipairs(gui:GetDescendants()) do
+            if v:IsA("TextButton") and (v.Text:lower():find("unlock") or v.Text:lower():find("buy") or v.Text:lower():find("comprar")) then
+                v:Click()
+                wait(0.1)
             end
-        else
-            print("Nenhum sistema de formas encontrado.")
+        end
+        print("Botões de unlock clicados!")
+        return
+    end
+    
+    -- 3. Tentar via Workspace (objetos interagíveis)
+    for _, v in ipairs(Workspace:GetDescendants()) do
+        if v:IsA("Part") and v:FindFirstChild("ClickDetector") then
+            v.ClickDetector:Click()
+            wait(0.1)
         end
     end
+    
+    print("Tentativas de unlock concluídas.")
 end
 
 -- // ==========================================
--- // LOOPS
+-- // LOOPS (MELHORADOS)
 -- // ==========================================
 
 RunService.Heartbeat:Connect(function()
     -- AUTO FARM XP
     if estados.autoFarmXP then
         -- Procura por XP no mapa
-        local xpParts = Workspace:FindFirstChild("XP") or Workspace:FindFirstChild("Experience")
+        local xpParts = Workspace:FindFirstChild("XP") or Workspace:FindFirstChild("Experience") or Workspace:FindFirstChild("Exp")
         if xpParts then
             for _, v in ipairs(xpParts:GetChildren()) do
-                if v:IsA("BasePart") or v:IsA("Part") then
-                    -- Move o jogador para perto do XP
+                if v:IsA("BasePart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = v.CFrame + Vector3.new(0, 3, 0)
+                    wait(0.1)
+                end
+            end
+        else
+            -- Fallback: procura por qualquer parte com nome "XP"
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("BasePart") and v.Name:lower():find("xp") then
                     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                         player.Character.HumanoidRootPart.CFrame = v.CFrame + Vector3.new(0, 3, 0)
                         wait(0.1)
                     end
                 end
             end
-        else
-            -- Fallback: procura por itens de XP na GUI
-            print("Procurando XP na GUI...")
         end
     end
     
     -- AUTO PVP
     if estados.autoPvP then
-        -- Procura por outros jogadores próximos
         for _, v in ipairs(Workspace:GetChildren()) do
             if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= player.Character then
                 local dist = (v.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
                 if dist < 100 then
-                    -- Move em direção ao jogador
                     player.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-                    
-                    -- Tenta atacar
                     if player.Character:FindFirstChild("Humanoid") then
                         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Attacking)
                     end
@@ -133,13 +139,10 @@ RunService.Heartbeat:Connect(function()
     
     -- ATTACK ALL
     if estados.attackAll then
-        -- Ataca todos os inimigos (jogadores e NPCs)
-        local targets = Workspace:GetChildren()
-        for _, v in ipairs(targets) do
+        for _, v in ipairs(Workspace:GetChildren()) do
             if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= player.Character then
                 local dist = (v.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
                 if dist < 80 then
-                    -- Ataca o alvo
                     if player.Character:FindFirstChild("Humanoid") then
                         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Attacking)
                     end
@@ -165,7 +168,7 @@ screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = screenGui
-mainFrame.Size = UDim2.new(0, 500, 0, 300)
+mainFrame.Size = UDim2.new(0, 500, 0, 350)
 mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
 mainFrame.BorderSizePixel = 2
@@ -294,7 +297,7 @@ for i, tab in ipairs(tabs) do
 end
 
 -- // ==========================================
--- // CONTEUDO
+-- // CONTEUDO (SCROLL)
 -- // ==========================================
 
 local content = Instance.new("ScrollingFrame")
@@ -419,7 +422,7 @@ function criarBotao(container, texto, callback)
 end
 
 -- // ==========================================
--- // CRIAR ABAS
+-- // CRIAR ABAS (COM ELEMENTOS)
 -- // ==========================================
 
 -- // ABA FARM
@@ -433,7 +436,25 @@ tabContent["farm"] = farmTab
 criarToggle(farmTab, "AUTO FARM XP", toggleAutoFarmXP, false)
 criarToggle(farmTab, "AUTO EVOLVE", toggleAutoEvolve, false)
 criarBotao(farmTab, "DESTRAVAR TODAS FORMAS", unlockAllForms)
-content.CanvasSize = UDim2.new(0, 0, 0, #farmTab:GetChildren() * 28 + 20)
+
+-- Atualizar CanvasSize da aba farm
+local function atualizarCanvas()
+    local maxHeight = 0
+    for _, tab in pairs(tabContent) do
+        if tab.Visible then
+            local children = tab:GetChildren()
+            if #children > 0 then
+                local lastChild = children[#children]
+                maxHeight = lastChild.Position.Y.Offset + lastChild.Size.Y.Offset + 20
+            end
+        end
+    end
+    content.CanvasSize = UDim2.new(0, 0, 0, math.max(maxHeight, 300))
+end
+
+-- Forçar atualização inicial
+task.wait(0.1)
+atualizarCanvas()
 
 -- // ABA PVP
 local pvpTab = Instance.new("Frame")
@@ -445,9 +466,7 @@ tabContent["pvp"] = pvpTab
 
 criarToggle(pvpTab, "AUTO PVP", toggleAutoPvP, false)
 criarToggle(pvpTab, "ATTACK ALL", toggleAttackAll, false)
-if #pvpTab:GetChildren() * 28 + 20 > content.CanvasSize.Y.Offset then
-    content.CanvasSize = UDim2.new(0, 0, 0, #pvpTab:GetChildren() * 28 + 20)
-end
+atualizarCanvas()
 
 -- // ABA UNLOCK
 local unlockTab = Instance.new("Frame")
@@ -461,20 +480,15 @@ criarBotao(unlockTab, "DESTRAVAR FORMAS", unlockAllForms)
 criarBotao(unlockTab, "DESTRAVAR TUDO", function()
     print("Destravando tudo...")
     unlockAllForms()
-    -- Tenta destravar outras coisas também
-    local remotes = player:FindFirstChild("ReplicatedStorage") or game:GetService("ReplicatedStorage")
-    if remotes then
-        for _, v in ipairs(remotes:GetDescendants()) do
-            if v:IsA("RemoteEvent") and (v.Name:lower():find("unlock") or v.Name:lower():find("buy")) then
-                v:FireServer()
-                wait(0.1)
-            end
+    local remotes = game:GetService("ReplicatedStorage")
+    for _, v in ipairs(remotes:GetDescendants()) do
+        if v:IsA("RemoteEvent") and (v.Name:lower():find("unlock") or v.Name:lower():find("buy")) then
+            v:FireServer()
+            wait(0.1)
         end
     end
 end)
-if #unlockTab:GetChildren() * 28 + 20 > content.CanvasSize.Y.Offset then
-    content.CanvasSize = UDim2.new(0, 0, 0, #unlockTab:GetChildren() * 28 + 20)
-end
+atualizarCanvas()
 
 -- // ABA CONFIG
 local configTab = Instance.new("Frame")
@@ -488,14 +502,12 @@ criarBotao(configTab, "FECHAR MENU", function()
     mainFrame.Visible = false
 end)
 criarBotao(configTab, "REINICIAR", function()
-    print("Reiniciando funções...")
     for k, v in pairs(estados) do
         estados[k] = false
     end
+    print("Funções reiniciadas")
 end)
-if #configTab:GetChildren() * 28 + 20 > content.CanvasSize.Y.Offset then
-    content.CanvasSize = UDim2.new(0, 0, 0, #configTab:GetChildren() * 28 + 20)
-end
+atualizarCanvas()
 
 -- // ==========================================
 -- // ATALHO K
