@@ -1,11 +1,99 @@
 -- // ============================================
--- // MENU 99 NOITES - VERSÃO CORRIGIDA
+-- // MENU 99 NOITES - VERSÃO ESTÁVEL
 -- // ============================================
 
 local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+
+-- // ========== SISTEMA DE CHAVE ==========
+local chaveCorreta = "99noites2025"
+local chaveValidada = false
+local aberto = false
+
+-- // ========== CRIA A GUI ==========
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player.PlayerGui
+screenGui.Name = "Menu99Noites"
+screenGui.ResetOnSpawn = false
+
+-- // ========== JANELA DE CHAVE ==========
+local keyFrame = Instance.new("Frame")
+keyFrame.Parent = screenGui
+keyFrame.Size = UDim2.new(0, 300, 0, 160)
+keyFrame.Position = UDim2.new(0.5, -150, 0.5, -80)
+keyFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+keyFrame.BorderSizePixel = 1
+keyFrame.BorderColor3 = Color3.fromRGB(200, 0, 0)
+keyFrame.Visible = true
+keyFrame.BackgroundTransparency = 0.05
+
+local keyCorner = Instance.new("UICorner")
+keyCorner.Parent = keyFrame
+keyCorner.CornerRadius = UDim.new(0, 4)
+
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Parent = keyFrame
+keyTitle.Size = UDim2.new(1, 0, 0, 30)
+keyTitle.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+keyTitle.Text = "SISTEMA DE CHAVE"
+keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyTitle.TextScaled = true
+keyTitle.Font = Enum.Font.GothamBold
+keyTitle.BorderSizePixel = 0
+
+local keySub = Instance.new("TextLabel")
+keySub.Parent = keyFrame
+keySub.Size = UDim2.new(1, -30, 0, 20)
+keySub.Position = UDim2.new(0, 15, 0, 40)
+keySub.BackgroundTransparency = 1
+keySub.Text = "Digite a chave para acessar"
+keySub.TextColor3 = Color3.fromRGB(150, 150, 150)
+keySub.TextScaled = true
+keySub.Font = Enum.Font.Gotham
+
+local keyInput = Instance.new("TextBox")
+keyInput.Parent = keyFrame
+keyInput.Size = UDim2.new(0.8, 0, 0, 30)
+keyInput.Position = UDim2.new(0.1, 0, 0, 65)
+keyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+keyInput.BorderSizePixel = 1
+keyInput.BorderColor3 = Color3.fromRGB(200, 0, 0)
+keyInput.Text = ""
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.TextScaled = true
+keyInput.Font = Enum.Font.Gotham
+keyInput.PlaceholderText = "Digite a chave..."
+keyInput.ClearTextOnFocus = true
+
+local keyCornerInput = Instance.new("UICorner")
+keyCornerInput.Parent = keyInput
+keyCornerInput.CornerRadius = UDim.new(0, 3)
+
+local keyBtn = Instance.new("TextButton")
+keyBtn.Parent = keyFrame
+keyBtn.Size = UDim2.new(0.4, 0, 0, 28)
+keyBtn.Position = UDim2.new(0.3, 0, 0, 110)
+keyBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+keyBtn.Text = "CONFIRMAR"
+keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBtn.TextScaled = true
+keyBtn.Font = Enum.Font.GothamBold
+keyBtn.BorderSizePixel = 0
+
+local keyCornerBtn = Instance.new("UICorner")
+keyCornerBtn.Parent = keyBtn
+keyCornerBtn.CornerRadius = UDim.new(0, 3)
+
+local keyError = Instance.new("TextLabel")
+keyError.Parent = keyFrame
+keyError.Size = UDim2.new(1, 0, 0, 16)
+keyError.Position = UDim2.new(0, 0, 0, 142)
+keyError.BackgroundTransparency = 1
+keyError.Text = ""
+keyError.TextColor3 = Color3.fromRGB(255, 50, 50)
+keyError.TextScaled = true
+keyError.Font = Enum.Font.Gotham
 
 -- // ========== JANELA PRINCIPAL ==========
 local mainFrame = Instance.new("Frame")
@@ -43,7 +131,6 @@ title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextSize = 12
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Parent = topBar
@@ -55,7 +142,6 @@ closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.TextScaled = true
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.BorderSizePixel = 0
-closeBtn.TextSize = 10
 
 local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = closeBtn
@@ -93,7 +179,6 @@ for i, aba in ipairs(abas) do
     btn.Font = Enum.Font.GothamSemibold
     btn.BorderSizePixel = 0
     btn.Name = aba.id
-    btn.TextSize = 10
     
     btn.MouseEnter:Connect(function()
         if btn.BackgroundColor3 ~= Color3.fromRGB(200, 0, 0) then
@@ -138,9 +223,7 @@ function atualizarAbas(abaId)
     end
 end
 
--- // ========== FUNÇÃO TOGGLE MENU (DEFINIDA ANTES DE SER USADA) ==========
-local aberto = false
-
+-- // ========== FUNÇÃO TOGGLE MENU ==========
 function toggleMenu()
     if not chaveValidada then
         keyFrame.Visible = true
@@ -193,7 +276,6 @@ function criarToggle(container, texto, callback, valorInicial)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
-    label.TextSize = 10
     
     local switch = Instance.new("Frame")
     switch.Parent = frame
@@ -250,7 +332,6 @@ function criarBotao(container, texto, cor, callback)
     btn.Font = Enum.Font.GothamSemibold
     btn.BorderSizePixel = 0
     btn.BackgroundTransparency = 0.1
-    btn.TextSize = 10
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.Parent = btn
@@ -294,7 +375,6 @@ function criarSlider(container, texto, min, max, padrao, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
-    label.TextSize = 10
     
     local valorLabel = Instance.new("TextLabel")
     valorLabel.Parent = frame
@@ -306,7 +386,6 @@ function criarSlider(container, texto, min, max, padrao, callback)
     valorLabel.TextXAlignment = Enum.TextXAlignment.Center
     valorLabel.TextScaled = true
     valorLabel.Font = Enum.Font.GothamBold
-    valorLabel.TextSize = 10
     
     local sliderBar = Instance.new("Frame")
     sliderBar.Parent = frame
@@ -371,7 +450,6 @@ function criarStatus(container, texto, cor)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextScaled = true
     label.Font = Enum.Font.Gotham
-    label.TextSize = 10
     
     return label
 end
@@ -488,7 +566,10 @@ movimentoContainer.Visible = false
 abasContent["movimento"] = movimentoContainer
 
 criarSlider(movimentoContainer, "Velocidade", 16, 250, 16, function(valor)
-    player.Character.Humanoid.WalkSpeed = valor
+    local char = player.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.WalkSpeed = valor
+    end
     print("Velocidade:", valor)
 end)
 criarToggle(movimentoContainer, "Pulo Infinito", function(estado)
@@ -520,8 +601,8 @@ end)
 
 configContainer.CanvasSize = UDim2.new(0, 0, 0, #configContainer:GetChildren() * 28 + 20)
 
--- // ========== VALIDAÇÃO DA CHAVE (DEPOIS DE DEFINIR toggleMenu) ==========
-keyBtn.MouseButton1Click:Connect(function()
+-- // ========== VALIDAÇÃO DA CHAVE ==========
+local function validarChave()
     if keyInput.Text == chaveCorreta then
         chaveValidada = true
         keyFrame.Visible = false
@@ -530,10 +611,14 @@ keyBtn.MouseButton1Click:Connect(function()
         keyError.Text = "Chave incorreta!"
         keyInput.Text = ""
     end
-end)
+end
+
+keyBtn.MouseButton1Click:Connect(validarChave)
 
 keyInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then keyBtn.MouseButton1Click:Fire() end
+    if enterPressed then
+        validarChave()
+    end
 end)
 
 -- // ========== ATALHO TECLA K ==========
@@ -588,7 +673,6 @@ notif.TextColor3 = Color3.fromRGB(255, 255, 255)
 notif.TextScaled = true
 notif.Font = Enum.Font.GothamBold
 notif.BorderSizePixel = 0
-notif.TextSize = 10
 
 local notifCorner = Instance.new("UICorner")
 notifCorner.Parent = notif
